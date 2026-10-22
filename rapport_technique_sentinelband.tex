@@ -1,6 +1,14 @@
 % =====================================================================
-% RAPPORT TECHNIQUE SCIENTIFIQUE — SENTINELBAND
+% RAPPORT TECHNIQUE SCIENTIFIQUE --- SENTINELBAND (v1.3)
 % Version recentrée sur le prototype wearable (partie antenne retirée)
+%
+% Images optionnelles (placer dans le même dossier que le .tex) :
+%   fig-mpu6050-chute.png  : enregistrement réel annoté (g en fonction du temps)
+%   photo-prototype.jpg    : photo du montage
+%   capture-app.png        : captures de l'application mobile
+%   log-serie.png          : extrait des logs série
+% Si un fichier est absent, un cadre rouge « À COMPLÉTER » s'affiche.
+% Avant le rendu : supprimer tous les \aCompleter{...} et ce bloc de commentaires.
 % =====================================================================
 \documentclass[12pt,a4paper]{article}
 
@@ -8,14 +16,13 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{eurosym}
 
 % --- Mise en page ---
 \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
 \usepackage{setspace}
 \onehalfspacing
-
-% --- Polices ---
-\usepackage{lmodern}
 
 % --- Mathématiques ---
 \usepackage{amsmath, amssymb}
@@ -25,16 +32,16 @@
 \usepackage{array}
 \usepackage{tabularx}
 \usepackage{multirow}
-\usepackage{longtable}
 
 % --- Figures ---
 \usepackage{graphicx}
 \usepackage{float}
-\usepackage{subcaption}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 
-% --- Couleurs et liens ---
+% --- Couleurs ---
 \usepackage[dvipsnames]{xcolor}
-\usepackage[colorlinks=true, linkcolor=blue!70!black, citecolor=green!50!black, urlcolor=blue!60!black]{hyperref}
 
 % --- Code source ---
 \usepackage{listings}
@@ -55,51 +62,87 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\textit{Rapport technique --- SentinelBand}}
-\fancyhead[R]{\small\textit{\thepage}}
-\fancyfoot[C]{\small Année universitaire \textit{2024--2025}}
+\fancyhead[L]{\small Rapport technique \textemdash{} SentinelBand}
+\fancyhead[R]{\small\thepage}
+\fancyfoot[C]{\small Année universitaire 2026\textendash 2027}
 
+% --- Liens (en dernier) ---
+\usepackage[colorlinks=true, linkcolor=blue!70!black, citecolor=green!50!black, urlcolor=blue!60!black]{hyperref}
+
+% --- Commandes personnalisées ---
+\newcommand{\aCompleter}[1]{\textcolor{red}{\textbf{[À COMPLÉTER : #1]}}}
+\newcommand{\aRemplir}{\textcolor{red}{\textbf{[n]}}}
+
+% Autorise une coupure de ligne après chaque underscore (identifiants longs en \texttt)
+\renewcommand{\_}{\textunderscore\allowbreak}
+\emergencystretch=3em
+
+% Figure optionnelle : #1 fichier, #2 largeur (fraction de \textwidth), #3 légende, #4 label
+\newcommand{\figureopt}[4]{%
+\begin{figure}[H]
+  \centering
+  \IfFileExists{#1}%
+    {\includegraphics[width=#2\textwidth]{#1}}%
+    {\fbox{\parbox{0.8\textwidth}{\centering\vspace{1cm}\aCompleter{insérer le fichier #1}\vspace{1cm}}}}
+  \caption{#3}
+  \label{#4}
+\end{figure}}
+
+% =====================================================================
+%                         PAGE DE GARDE
+% =====================================================================
 % =====================================================================
 %                         PAGE DE GARDE
 % =====================================================================
 \begin{document}
 
 \begin{titlepage}
+  \centering
+
+\thispagestyle{empty}
+
+{\Large \textbf{ESPRIT -- École Supérieure Privée d’Ingénierie et de Technologies}\par}
+  \vspace{0.4cm}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{Logo_ESPRIT_Ariana.jpg}
+   
+    \label{fig:placeholder}
+\end{figure}
 \centering
-\vspace*{1cm}
 
-{\Large \textsc{ESPRIT --- École Supérieure Privée d'Ingénierie et de Technologies}\par}
-{\large \textsc{5\textsuperscript{ème} année SLEAM --- Wearable Technologies}\par}
-\vspace{0.5cm}
-{\normalsize Année universitaire 2024--2025\par}
 
-\vspace{2cm}
-
-\rule{\linewidth}{0.4pt}\par
-\vspace{0.4cm}
-{\LARGE \textbf{Conception et validation d'un bracelet connecté pour la surveillance de la sécurité des travailleurs industriels~: prototype wearable multi-capteurs avec algorithme de détection de chute}\par}
-\vspace{0.4cm}
-\rule{\linewidth}{0.4pt}\par
 
 \vspace{1cm}
-{\Large \textbf{Projet SentinelBand}\par}
 
-\vspace{1.5cm}
+\rule{\linewidth}{0.4pt}\par
+\vspace{0.2cm}
+{\Large \textbf{Conception et évaluation préliminaire d'un ceinture
+connecté pour la surveillance de la sécurité des travailleurs industriels~: prototype wearable multi-capteurs avec algorithme de détection de chute}\par}
+\vspace{0.2cm}
+\rule{\linewidth}{0.4pt}\par
 
+\vspace{0.6cm}
+
+
+\vspace{0.8cm}
+
+\small
 \begin{tabular}{r l}
   \textbf{Étudiants}   & Adem Aboueb \\
                         & Aziz Ayari \\
                         & Nesrine Fezzani \\
                         & Mohamed Khalil Hammami \\
-                        & Mohamed Wassef Mnasri \\[6pt]
-  \textbf{Encadrante}   & Ameni Mersani, Wearable Technologies, ESPRIT \\[6pt]
-  \textbf{Formation}    & 5\textsuperscript{ème} année SLEAM --- Wearable Technologies \\[6pt]
-  \textbf{Version}      & v1.2 --- \today \\[6pt]
-  \textbf{Dépôt du code} & \url{https://github.com/AdemAboueb7/sentinelband}
+                        & Mohamed Wassef Mnasri \\[4pt]
+  \textbf{Encadrante}   & Ameni Mersani, Wearable Technologies, ESPRIT \\[4pt]
+  \textbf{Formation}    & 5\textsuperscript{ème} année SLEAM --- Wearable Technologies \\[4pt]
+  \textbf{Version}      & v1.3 --- 22 octobre 2026 \\[4pt]
+  \textbf{Dépôt du code} & \url{https://github.com/AdemAboueb7/sentinelband.git}
 \end{tabular}
 
+
 \vfill
-{\small Document rédigé conformément au cahier des charges du rapport technique.\par}
+{\small Année universitaire 2026--2027\par}
 \end{titlepage}
 
 % =====================================================================
@@ -109,10 +152,9 @@
 \section*{Résumé}
 \addcontentsline{toc}{section}{Résumé}
 
-La sécurité des travailleurs isolés en milieu industriel constitue un enjeu majeur, les chutes et l'exposition à des environnements dangereux pouvant entraîner des conséquences graves en l'absence d'alerte rapide. Ce travail présente SentinelBand, un prototype de dispositif wearable fondé sur un microcontrôleur ESP32 intégrant un accéléromètre-gyroscope MPU6050 ($\pm$8\,g, $\pm$250\,°/s), un récepteur GPS NEO-6M, un module GSM SIM800L, un buzzer piézo, une LED RGB et un bouton d'annulation. Un algorithme embarqué de détection de chute à machine à états finis (FSM) exploite quatre phases séquentielles --- pré-chute (agitation gyroscopique $>$80\,°/s), apesanteur ($|\vec{a}|<0{,}55$\,g pendant 80--1500\,ms), impact ($|\vec{a}|>2{,}3$\,g) et posture post-chute (angle de gîte $>$50° pendant 5\,s) --- avec calcul d'un score de confiance pondéré (0--100). Un score $\geq$60 déclenche des alertes graduées (jaune puis rouge) transmises par Wi-Fi à une API REST Node.js/PostgreSQL et par SMS au responsable de sécurité. Une application mobile React Native permet la supervision en temps réel de plusieurs travailleurs avec notifications push, historique télémétrique et géolocalisation. Les essais fonctionnels ont validé la détection de chute simulée (commande série) avec un score de confiance injecté à 95\,\%, ainsi que la chaîne de transmission Wi-Fi vers l'API. Les principales limites identifiées sont l'absence de capteurs de température et de gaz réels, la validation statistique incomplète de l'algorithme de détection sur chutes réelles, et l'absence de mesure d'autonomie électrique.
+La sécurité des travailleurs isolés en milieu industriel constitue un enjeu majeur, les chutes pouvant entraîner des conséquences graves en l'absence d'alerte rapide. Ce travail présente SentinelBand, un prototype de ceinture connecté fondé sur un ESP32 intégrant un accéléromètre-gyroscope MPU6050 ($\pm$8\,g, $\pm$250\,°/s), un récepteur GPS NEO-6M, un module GSM SIM800L, un buzzer, une LED RGB et un bouton d'annulation. Un algorithme embarqué de détection de chute à machine à états finis (FSM) exploite quatre phases (pré-chute, apesanteur, impact, posture post-chute) avec un score de confiance pondéré (0--100). Un score $\geq$60 déclenche des alertes graduées (jaune puis rouge), transmises par Wi-Fi à une API REST Node.js/PostgreSQL et par SMS au responsable de sécurité. Une application mobile React Native assure la supervision en temps réel, avec notifications push, historique et géolocalisation. Les essais par injection de chute via la commande série ont validé la chaîne d'alerte et la transmission vers l'API~; l'algorithme de détection lui-même n'a pas encore été validé sur des chutes réelles. Les principales limites sont l'absence de capteurs de température et de gaz réels, l'absence de validation statistique, l'échantillonnage à 50\,Hz, l'absence de mesure d'autonomie et la transmission non chiffrée.
 
-\vspace{0.3cm}
-\noindent\textbf{Mots-clés~:} wearable, détection de chute, ESP32, bracelet connecté, IoT industriel, travailleur isolé
+
 
 % =====================================================================
 %                     TABLE DES MATIÈRES
@@ -128,22 +170,22 @@ La sécurité des travailleurs isolés en milieu industriel constitue un enjeu m
 
 \subsection{Contexte des systèmes wearables}
 
-Les dispositifs électroniques portables (\textit{wearables}) connaissent un essor considérable dans les domaines de la santé, du sport et de la sécurité au travail~\cite{ref_wearable_survey}. Dans le secteur industriel, la surveillance des travailleurs isolés ou exposés à des environnements dangereux (chantiers de construction, sites pétrochimiques, entrepôts logistiques) représente un besoin critique. Les systèmes de type \textit{man-down} ou \textit{lone worker protection} combinent typiquement des capteurs inertiels pour la détection de chute, des capteurs environnementaux (température, gaz), un module de géolocalisation et un canal de communication sans fil pour transmettre les alertes en temps réel~\cite{ref_lone_worker}. La miniaturisation des microcontrôleurs connectés tels que l'ESP32, couplée à la disponibilité de capteurs MEMS bon marché comme le MPU6050, rend aujourd'hui accessibles des prototypes wearables complets pour moins de 30\,\euro~\cite{ref_bayar2023}.
+Les dispositifs électroniques portables (\textit{wearables}) connaissent un essor considérable dans les domaines de la santé, du sport et de la sécurité au travail~\cite{ref_wearable_survey}. Dans le secteur industriel, la surveillance des travailleurs isolés ou exposés à des environnements dangereux (chantiers, sites pétrochimiques, entrepôts logistiques) représente un besoin critique~\cite{ref_lone_worker}. Les systèmes de type \textit{man-down} ou \textit{lone worker protection} combinent typiquement des capteurs inertiels pour la détection de chute, des capteurs environnementaux (température, gaz), un module de géolocalisation et un canal de communication sans fil pour transmettre les alertes en temps réel. La miniaturisation des microcontrôleurs connectés tels que l'ESP32~\cite{ref_esp32_datasheet}, couplée à la disponibilité de capteurs MEMS bon marché comme le MPU6050~\cite{ref_mpu6050_datasheet}, rend accessibles des prototypes wearables complets pour un coût de composants de l'ordre de quelques dizaines d'euros.
 
 \subsection{Problème scientifique}
 
-Le problème scientifique abordé dans ce travail est le suivant~: comment concevoir un système embarqué portable multi-capteurs capable de détecter de manière fiable les situations de danger (chute, immobilité prolongée) d'un travailleur industriel et de transmettre des alertes en temps réel vers une application mobile de supervision, tout en minimisant les faux positifs susceptibles de perturber le travail~?
+Comment concevoir un système embarqué portable multi-capteurs capable de détecter de manière fiable les situations de danger (chute, immobilité prolongée) d'un travailleur industriel et de transmettre des alertes en temps réel vers une application mobile de supervision, tout en limitant les faux positifs susceptibles de perturber le travail~?
 
 \subsection{État de l'art}
 
-La détection de chute par accéléromètre embarqué fait l'objet d'une littérature abondante. Bayar \textit{et al.}~\cite{ref_bayar2023} ont démontré la faisabilité du déploiement d'un modèle de classification de chute sur un ESP32 couplé à un MPU6050 via la plateforme Edge Impulse, validant l'approche TinyML pour ce type d'application. De nombreux prototypes récents (2023--2024) exploitent une architecture similaire --- ESP32, MPU6050, Wi-Fi/GSM --- avec des algorithmes à seuils exploitant la magnitude du vecteur accélération $|\vec{a}| = \sqrt{a_x^2 + a_y^2 + a_z^2}$ combinée à la vitesse angulaire~\cite{ref_fall_detection_threshold,ref_esp32_fall_iot}. Kangas \textit{et al.}~\cite{ref_kangas} ont montré que la combinaison d'un seuil d'accélération de chute libre ($|\vec{a}|<0{,}5$\,g) avec un seuil d'impact ($|\vec{a}|>2$\,g) offre une sensibilité supérieure à 95\,\% pour les chutes avant et latérales, tout en maintenant une spécificité acceptable ($>$85\,\%) lors d'activités quotidiennes. Mauldin \textit{et al.}~\cite{ref_mauldin} ont souligné l'importance du classifieur post-impact (posture, immobilité) pour réduire les faux positifs liés aux mouvements brusques non accidentels.
+La détection de chute par accéléromètre embarqué fait l'objet d'une littérature abondante. Bayar \textit{et al.}~\cite{ref_bayar2023} ont déployé un modèle de classification de chute sur un ESP32 couplé à un MPU6050 via la plateforme Edge Impulse, illustrant l'approche TinyML sur ce type de matériel. Les approches à seuils exploitent la magnitude du vecteur accélération $|\vec{a}| = \sqrt{a_x^2 + a_y^2 + a_z^2}$, éventuellement combinée à la vitesse angulaire et à la posture après impact~\cite{ref_fall_detection_threshold}. Kangas \textit{et al.}~\cite{ref_kangas} ont comparé plusieurs algorithmes de faible complexité fondés sur des accéléromètres portés sur le corps et montré l'intérêt de combiner des critères de chute libre, d'impact et de posture finale. Mauldin \textit{et al.}~\cite{ref_mauldin} proposent, à l'inverse, une approche par apprentissage profond sur smartwatch, plus coûteuse en calcul et en données d'entraînement que les méthodes à seuils retenues ici pour un microcontrôleur.
 
 \subsection{Contribution du travail}
 
 Les principales contributions de ce travail sont les suivantes~:
 \begin{enumerate}
-    \item la conception, l'implémentation et la validation fonctionnelle d'un prototype wearable SentinelBand intégrant un algorithme de détection de chute à machine à états finis (FSM) en quatre phases avec score de confiance pondéré ($C_{\text{final}} = 0{,}35 \cdot S_{\text{FF}} + 0{,}45 \cdot S_{\text{impact}} + 0{,}20 \cdot S_{\text{posture}}$), sur plateforme ESP32 avec MPU6050 ($\pm$8\,g), GPS NEO-6M et module GSM SIM800L~;
-    \item le développement d'une chaîne complète de supervision comprenant une API REST (Node.js~18 / PostgreSQL~16), une application mobile React Native (Expo~57) avec notifications push, gestion de collègues avec consentement explicite et visualisation temps réel de la télémétrie géolocalisée.
+    \item la conception, l'implémentation et l'évaluation préliminaire d'un prototype wearable SentinelBand intégrant un algorithme de détection de chute à machine à états finis (FSM) en quatre phases avec score de confiance pondéré ($C_{\text{final}} = 0{,}35 \cdot S_{\text{FF}} + 0{,}45 \cdot S_{\text{impact}} + 0{,}20 \cdot S_{\text{posture}}$), sur ESP32 avec MPU6050 ($\pm$8\,g), GPS NEO-6M et module GSM SIM800L~;
+    \item le développement d'une chaîne complète de supervision comprenant une API REST (Node.js~18 / PostgreSQL~16) et une application mobile React Native (Expo~57) avec notifications push, gestion de collègues avec consentement explicite et visualisation temps réel de la télémétrie géolocalisée.
 \end{enumerate}
 
 % =====================================================================
@@ -153,120 +195,123 @@ Les principales contributions de ce travail sont les suivantes~:
 
 \subsection{Scénario d'usage}
 
-Le scénario d'usage cible est le suivant~: un travailleur opérant seul sur un chantier industriel porte le dispositif SentinelBand au poignet. Le boîtier surveille en continu ses mouvements via l'accéléromètre-gyroscope MPU6050 à une fréquence d'échantillonnage de 50\,Hz. Si une séquence de chute est détectée (apesanteur puis impact puis posture anormale) avec un score de confiance $\geq 60\,\%$, ou si une immobilité prolongée est constatée ($>$20\,s sans mouvement), le système entre en état d'alerte jaune. Un buzzer émet un bip intermittent (150\,ms toutes les secondes) et la LED passe au jaune. Si le travailleur ne confirme pas qu'il va bien en appuyant sur le bouton d'annulation dans les 15 secondes, l'état escalade en alerte rouge~: un SMS d'urgence contenant la position GPS est envoyé au responsable de sécurité via le module SIM800L, et la télémétrie est transmise à l'API backend par Wi-Fi toutes les 2\,s. L'application mobile du responsable reçoit une notification push et affiche en temps réel l'état, la position et les données capteurs du travailleur. Le travailleur peut annuler une alerte à tout moment en appuyant sur le bouton (GPIO\,33), avec un délai de refroidissement de 15\,s pour prévenir les annulations accidentelles.
+Un travailleur opérant seul sur un chantier industriel porte le dispositif SentinelBand à la ceinture. Le boîtier surveille en continu ses mouvements via le MPU6050 à 50\,Hz. Si une séquence de chute est détectée (apesanteur, impact, posture anormale) avec un score de confiance $\geq 60$, ou si une immobilité prolongée est constatée ($>$20\,s sans mouvement), le système entre en état d'alerte JAUNE~: le buzzer émet un bip intermittent (150\,ms toutes les secondes) et la LED passe au jaune. Si le travailleur n'appuie pas sur le bouton d'annulation dans les 15\,s (\texttt{YELLOW\_TIMEOUT\_MS}), l'état escalade en alerte ROUGE~: un SMS d'urgence contenant la position GPS est envoyé au responsable via le SIM800L, et la télémétrie est transmise à l'API par Wi-Fi toutes les 2\,s. L'application mobile du responsable reçoit une notification push et affiche l'état, la position et les données capteurs. Le travailleur peut annuler une alerte à tout moment (GPIO\,33)~; un délai de refroidissement de 15\,s (\texttt{CANCEL\_HOLDOFF\_MS}), distinct du délai d'escalade, empêche un re-déclenchement immédiat après annulation.
 
 \subsection{Tableau d'exigences vérifiables}
+
+
 
 \begin{table}[H]
 \centering
 \caption{Exigences fonctionnelles et techniques du système SentinelBand.}
 \label{tab:exigences}
-\small
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{3cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{2.5cm}}
+\footnotesize
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
 \toprule
-\textbf{Exigence} & \textbf{Cible} & \textbf{Justification} & \textbf{Méthode de vérification} & \textbf{Résultat} \\
+\textbf{Exigence} & \textbf{Cible} & \textbf{Justification} & \textbf{Vérification} & \textbf{Résultat} \\
 \midrule
-Acquisition IMU & 50\,Hz, $\pm$8\,g, $\pm$250\,°/s & Détection de chute & Lecture registres I2C 0x3B--0x48 & Vérifié (code) \\
+Acquisition IMU & 50\,Hz, $\pm$8\,g, $\pm$250\,°/s & Détection de chute & Lecture registres I2C 0x3B--0x48 & Testé \\
 \addlinespace
-Temps réponse alerte chute & $\leq$5\,s après impact & Réactivité & Chronométrage série & $\sim$80--1600\,ms (FSM) + 15\,s timeout \\
+Délai d'alerte locale (JAUNE) après le début de la chute & $\leq$8\,s & Réactivité (la fenêtre de posture de 5\,s impose un minimum d'environ 5\,s après l'impact) & Chronométrage série & $\approx$5--7,5\,s (calculé d'après les paramètres FSM, non chronométré) \\
 \addlinespace
-Temps réponse immobilité & $\leq$20\,s & Sécurité & Chronométrage & 20\,s exact \\
+Délai d'alerte immobilité & $\leq$20\,s & Sécurité & Chronométrage & 20\,s (paramètre, logs) \\
 \addlinespace
-Connectivité Wi-Fi & IEEE 802.11 b/g/n & Transmission télémétrie & Test HTTP POST & Vérifié (reconnexion auto) \\
+Connectivité Wi-Fi & IEEE 802.11 b/g/n & Transmission télémétrie & Test HTTP POST & Testé (reconnexion auto) \\
 \addlinespace
-Portée SMS & Réseau GSM & Alerte hors Wi-Fi & Envoi SIM800L AT+CMGS & Vérifié (code AT complet) \\
+Alerte hors Wi-Fi & SMS via réseau GSM & Alerte sans infrastructure locale & AT+CMGS & Testé (diagnostic AT, SMS reçu) \\
 \addlinespace
-Autonomie estimée & $\geq$8\,h & Usage journée travail & Estimation (non mesuré) & Non mesuré \\
+Autonomie & $\geq$8\,h & Journée de travail & Estimation & Estimée 8--14\,h, non mesurée \\
 \addlinespace
-Télémétrie temps réel & 4\,s normal / 2\,s alerte & Supervision continue & Inspection code & Vérifié (code) \\
+Télémétrie temps réel & 4\,s normal / 2\,s alerte & Supervision continue & Inspection code & Implémenté \\
 \addlinespace
-Sécurité API & SHA-256 + JWT 30\,j & Confidentialité & Inspection code serveur & Vérifié \\
+Sécurité API & SHA-256 + JWT 30\,j & Confidentialité & Inspection code serveur & Implémenté \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \subsection{Architecture fonctionnelle}
 
-Le système SentinelBand se décompose en cinq blocs principaux~:
+Le système se décompose en cinq blocs~:
 
 \begin{enumerate}
-    \item \textbf{Bloc capteurs~:} MPU6050 ($\pm$8\,g, $\pm$250\,°/s, I2C à 100\,kHz, adresse 0x68), module GPS NEO-6M (UART2 à 9600\,bauds, tampon RX 1024 octets). Les valeurs de température et de gaz sont des constantes logicielles dans cette version ($T = 25{,}0$\,°C, gaz~$= 150$\,mV) car aucun capteur LM35 ni MQ-2 n'est physiquement connecté.
+    \item \textbf{Bloc capteurs~:} MPU6050 ($\pm$8\,g, $\pm$250\,°/s, I2C à 100\,kHz, adresse 0x68), GPS NEO-6M (UART2, 9600\,bauds, tampon RX 1024 octets). Température et gaz sont des constantes logicielles ($T = 25{,}0$\,°C, gaz~$= 150$\,mV)~: aucun capteur LM35 ni MQ-2 n'est connecté.
 
-    \item \textbf{Bloc traitement/décision~:} ESP32 exécutant la boucle principale à 50\,Hz~: lecture IMU (I2C), exécution de la FSM de détection de chute en 4 phases (pré-chute, apesanteur, impact, posture), logique d'évaluation d'état (NORMAL $\rightarrow$ JAUNE $\rightarrow$ ROUGE), gestion du bouton d'annulation et des commandes série de débogage.
+    \item \textbf{Bloc traitement/décision~:} ESP32 exécutant la boucle principale (lecture IMU à 50\,Hz, FSM de détection de chute en 4 phases, évaluation d'état NORMAL $\rightarrow$ JAUNE $\rightarrow$ ROUGE, bouton d'annulation, commandes série de débogage).
 
-    \item \textbf{Bloc actionneurs/alerte~:} buzzer piézo (GPIO\,4, bip 150\,ms/s en JAUNE, oscillation 4\,Hz en ROUGE), LED RGB à cathode commune (GPIO\,25/26/27 : vert en NORMAL, jaune en JAUNE, rouge en ROUGE), bouton poussoir (GPIO\,33, INPUT\_PULLUP, debounce 300\,ms).
+    \item \textbf{Bloc actionneurs/alerte~:} buzzer piézo (GPIO\,4), LED RGB à cathode commune (GPIO\,25/26/27)~: vert en NORMAL, jaune en JAUNE, rouge en ROUGE~; bouton poussoir (GPIO\,33, \texttt{INPUT\_PULLUP}, debounce 300\,ms).
 
-    \item \textbf{Bloc transmission~:} Wi-Fi intégré ESP32 (antenne PCB interne, mode STA, reconnexion automatique toutes les 8\,s) vers l'API REST (POST JSON, timeout connexion 2500\,ms, timeout réponse 3000\,ms)~; module SIM800L (UART1 à 9600\,bauds) pour SMS d'urgence géolocalisé en cas d'alerte ROUGE.
+    \item \textbf{Bloc transmission~:} Wi-Fi intégré de l'ESP32 (antenne PCB interne, mode STA, reconnexion toutes les 8\,s) vers l'API REST (POST JSON, timeouts 2500\,ms et 3000\,ms)~; module SIM800L (UART1) pour le SMS d'urgence géolocalisé en alerte ROUGE.
 
-    \item \textbf{Bloc application/tableau de bord~:} API Node.js/Express (port 3000) avec base PostgreSQL~16 (Docker Compose), application mobile React Native/Expo avec notifications push (Expo Push Service), polling toutes les 3\,s, historique télémétrique et visualisation cartographique.
+    \item \textbf{Bloc application~:} API Node.js/Express (port 3000) avec PostgreSQL~16 (Docker Compose), application React Native/Expo avec notifications push (Expo Push Service), polling toutes les 3\,s, historique télémétrique et carte.
 \end{enumerate}
 
 \begin{figure}[H]
-    \centering
-    \fbox{\parbox{0.92\textwidth}{\centering\vspace{0.3cm}
-    \textbf{Architecture fonctionnelle --- SentinelBand}\\[8pt]
-    \small
-    \begin{tabular}{ccccc}
-    Grandeur phys. & $\rightarrow$ & Capteur & $\rightarrow$ & Traitement ESP32 \\
-    \hline
-    Accél./gyro. & & MPU6050 (I2C) & & FSM 4 phases \\
-    Position GPS & & NEO-6M (UART2) & & Évaluation état \\
-    \end{tabular}\\[8pt]
-    $\downarrow$\\[4pt]
-    \begin{tabular}{ccc}
-    Actionneur & \quad & Transmission \\
-    \hline
-    Buzzer + LED RGB & & Wi-Fi $\rightarrow$ API REST $\rightarrow$ App mobile \\
-    Bouton annulation & & GSM SIM800L $\rightarrow$ SMS responsable \\
-    \end{tabular}\\[4pt]
-    \textit{\footnotesize Note~: Le prototype communique via l'antenne PCB interne de l'ESP32. Aucune antenne textile n'est connectée au chemin RF.}
-    \vspace{0.3cm}
-    }}
-    \caption{Architecture fonctionnelle du système SentinelBand.}
-    \label{fig:architecture}
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, align=center, text width=3.0cm, minimum height=1.1cm, font=\footnotesize},
+  esp/.style={draw, rounded corners, align=center, text width=3.0cm, minimum height=5.2cm, font=\footnotesize, fill=blue!8},
+  arrow/.style={-{Stealth[length=2.5mm]}, thick}
+]
+  \node[box] (imu) at (0,2.2) {MPU6050\\accél./gyro. (I2C)};
+  \node[box] (gps) at (0,0) {GPS NEO-6M\\(UART2)};
+  \node[box] (btn) at (0,-2.2) {Bouton\\d'annulation (GPIO\,33)};
+
+  \node[esp] (mcu) at (4.8,0) {\textbf{ESP32}\\[4pt]FSM de chute\\4 phases\\[4pt]Évaluation d'état\\NORMAL / JAUNE / ROUGE};
+
+  \node[box] (alert) at (9.6,2.2) {Buzzer\\+ LED RGB};
+  \node[box] (wifi) at (9.6,0) {Wi-Fi $\rightarrow$ API REST\\$\rightarrow$ app mobile};
+  \node[box] (gsm) at (9.6,-2.2) {GSM SIM800L\\$\rightarrow$ SMS};
+
+  \draw[arrow] (imu.east) -- (mcu.west |- imu.east);
+  \draw[arrow] (gps.east) -- (mcu.west |- gps.east);
+  \draw[arrow] (btn.east) -- (mcu.west |- btn.east);
+  \draw[arrow] (mcu.east |- alert.west) -- (alert.west);
+  \draw[arrow] (mcu.east |- wifi.west) -- (wifi.west);
+  \draw[arrow] (mcu.east |- gsm.west) -- (gsm.west);
+\end{tikzpicture}
+\caption{Architecture fonctionnelle du système SentinelBand (antenne PCB interne de l'ESP32 ; aucune antenne externe).}
+\label{fig:architecture}
 \end{figure}
 
 \subsection{Justification des composants et nomenclature}
-
-Le tableau~\ref{tab:nomenclature} présente la nomenclature des composants du prototype wearable.
 
 \begin{table}[H]
 \centering
 \caption{Nomenclature des composants du prototype SentinelBand.}
 \label{tab:nomenclature}
-\small
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{3cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{2cm} >{\centering\arraybackslash}p{1cm}}
+\footnotesize
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{2.6cm} c}
 \toprule
 \textbf{Composant} & \textbf{Fonction} & \textbf{Interface} & \textbf{Alimentation} & \textbf{Qté} \\
 \midrule
-ESP32 DevKit v1 & MCU principal, Wi-Fi 802.11 b/g/n intégré, 240\,MHz dual-core & USB, GPIO, I2C, UART & 5\,V (USB) & 1 \\
+ESP32 DevKit v1 & MCU principal, Wi-Fi 802.11 b/g/n, 240\,MHz dual-core & USB, GPIO, I2C, UART & 5\,V (USB ou boost) & 1 \\
 \addlinespace
-MPU6050 & Accéléromètre 3 axes ($\pm$8\,g, 4096\,LSB/g) + gyroscope 3 axes ($\pm$250\,°/s, 131\,LSB/°/s) & I2C (SDA=21, SCL=22), addr 0x68 & 3{,}3\,V & 1 \\
+MPU6050 & Accéléromètre 3 axes ($\pm$8\,g, 4096\,LSB/g) et gyroscope 3 axes ($\pm$250\,°/s, 131\,LSB/(°/s)) & I2C (SDA=21, SCL=22), adresse 0x68 & 3,3\,V & 1 \\
 \addlinespace
-GPS NEO-6M & Géolocalisation par satellites, trames NMEA (TinyGPSPlus) & UART2 (RX=16, TX=17), 9600\,bds & 3{,}3\,V & 1 \\
+GPS NEO-6M & Géolocalisation, trames NMEA (TinyGPSPlus) & UART2 (RX=16, TX=17), 9600\,bds & 3,3\,V & 1 \\
 \addlinespace
-SIM800L & Communication GSM, envoi SMS AT+CMGS & UART1 (RX=18, TX=19), 9600\,bds & 3{,}7--4{,}2\,V (LiPo 18650 + capa. 1000\,µF) & 1 \\
+SIM800L & GSM (2G), envoi de SMS (AT+CMGS) & UART1 (RX=18, TX=19), 9600\,bds & 3,7--4,2\,V direct sur LiPo, condensateur 1000\,µF (pics de courant) & 1 \\
 \addlinespace
-Buzzer piézo actif & Alerte sonore JAUNE/ROUGE & GPIO\,4 (digital OUT) & 3{,}3\,V & 1 \\
+Buzzer piézo actif & Alerte sonore JAUNE/ROUGE & GPIO\,4 & 3,3\,V & 1 \\
 \addlinespace
-LED RGB (cathode commune) & Indicateur visuel d'état (vert/jaune/rouge) & GPIO\,25 (R), 26 (G), 27 (B) & 3{,}3\,V & 1 \\
+LED RGB (cathode commune) & Indicateur visuel d'état & GPIO\,25 (R), 26 (G), 27 (B) & 3,3\,V & 1 \\
 \addlinespace
-Bouton poussoir NO & Annulation d'alerte (debounce 300\,ms) & GPIO\,33 (INPUT\_PULLUP) & --- & 1 \\
+Bouton poussoir NO & Annulation d'alerte & GPIO\,33 (\texttt{INPUT\_PULLUP}) & --- & 1 \\
 \addlinespace
-Batterie LiPo 3{,}7\,V & Alimentation autonome ESP32 + GPS & Boost 5\,V (module TP4056 + MT3608) & 3000--4000\,mAh & 1 \\
+Batterie LiPo 3,7\,V & Alimentation autonome & TP4056 (charge) + MT3608 (boost 5\,V) & 3000--4000\,mAh & 1 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \textbf{Justification des choix~:}
 \begin{itemize}
-    \item \textbf{ESP32} plutôt qu'Arduino Uno ou STM32~: le Wi-Fi et le Bluetooth intégrés, les deux cœurs à 240\,MHz, la faible consommation en mode deep sleep (~10\,µA) et le coût réduit ($\sim$5\,\euro) en font le choix optimal pour un prototype IoT wearable. La bibliothèque HTTPClient native simplifie la communication REST.
+    \item \textbf{ESP32}~\cite{ref_esp32_datasheet} plutôt qu'Arduino Uno ou STM32~: Wi-Fi et Bluetooth intégrés, deux cœurs à 240\,MHz, mode deep sleep à faible consommation et coût réduit, ce qui en fait un choix adapté à un prototype IoT wearable. La bibliothèque HTTPClient native simplifie la communication REST.
 
-    \item \textbf{MPU6050} plutôt que ADXL345 (2 axes, $\pm$16\,g uniquement) ou LSM6DS3 (plus coûteux, 8\,€)~: capteur 6 axes largement documenté (4096\,LSB/g en $\pm$8\,g), faible coût ($<$2\,\euro), communication I2C standard. La plage $\pm$8\,g est adaptée à la détection d'impacts typiques de chute (3--6\,g mesurés en littérature).
+    \item \textbf{MPU6050}~\cite{ref_mpu6050_datasheet} plutôt que l'ADXL345 (accéléromètre seul)~: capteur 6 axes largement documenté, à faible coût, en I2C standard. La plage $\pm$8\,g offre une bonne résolution (4096\,LSB/g) mais peut saturer lors d'un impact au poignet (voir section~\ref{sec:limites}).
 
-    \item \textbf{SIM800L} pour la redondance de communication~: permet l'envoi de SMS d'urgence même en l'absence de réseau Wi-Fi, couvrant ainsi les environnements industriels sans infrastructure réseau locale. Le module gère également la géolocalisation par les tours cellulaires en secours.
+    \item \textbf{SIM800L} pour la redondance de communication~: il permet l'envoi de SMS d'urgence hors couverture Wi-Fi. Il est toutefois limité au réseau 2G, dont la disponibilité diminue selon les pays.
 
-    \item \textbf{GPS NEO-6M} plutôt que NEO-M8N~: compromis coût/performance suffisant pour une précision de $\sim$3\,m en conditions outdoor. La bibliothèque TinyGPSPlus (Mikal Hart) assure le décodage des trames NMEA sans bibliothèque tierce lourde.
+    \item \textbf{GPS NEO-6M} plutôt que NEO-M8N~: compromis coût/performance suffisant pour un prototype. La bibliothèque TinyGPSPlus~\cite{ref_tinygps} décode les trames NMEA sans dépendance lourde.
 \end{itemize}
 
 % =====================================================================
@@ -274,18 +319,18 @@ Batterie LiPo 3{,}7\,V & Alimentation autonome ESP32 + GPS & Boost 5\,V (module 
 % =====================================================================
 \section{Méthodes expérimentales}
 
-Le prototype wearable utilise l'antenne PCB interne de l'ESP32 pour la communication Wi-Fi (2{,}4\,GHz, bande ISM). Les tests fonctionnels portent sur le système complet~: capteur, décision embarquée, actionneurs et transmission.
+Le prototype utilise l'antenne PCB interne de l'ESP32 pour le Wi-Fi (2,4\,GHz, bande ISM). Les tests fonctionnels portent sur la chaîne complète~: capteurs, décision embarquée, actionneurs et transmission.
 
 \subsection{Vérification des capteurs}
 
 \begin{itemize}
-    \item \textbf{MPU6050~:} l'initialisation vérifie la communication I2C en adressant le registre 0x6B (Power Management) et configure les plages $\pm$8\,g (registre 0x1C, valeur 0x10) et $\pm$250\,°/s (registre 0x1B, valeur 0x00). La lecture des données brutes s'effectue via 14 octets consécutifs à partir du registre 0x3B. Les facteurs de conversion sont 4096\,LSB/g et 131\,LSB/°/s. Au repos, la magnitude $|\vec{a}| = \sqrt{a_x^2 + a_y^2 + a_z^2}$ converge vers $\sim$1{,}0\,g (gravité). La fréquence d'échantillonnage est fixée à 50\,Hz (intervalle de 20\,ms dans la boucle principale).
+    \item \textbf{MPU6050~:} l'initialisation écrit le registre 0x6B (Power Management) et configure les plages $\pm$8\,g (registre 0x1C, valeur 0x10) et $\pm$250\,°/s (registre 0x1B, valeur 0x00). Les données brutes sont lues par blocs de 14 octets à partir du registre 0x3B, avec les facteurs de conversion 4096\,LSB/g et 131\,LSB/(°/s). Au repos, $|\vec{a}|$ converge vers $\sim$1\,g. L'échantillonnage est fixé à 50\,Hz (20\,ms).
 
-    \item \textbf{GPS NEO-6M~:} le tampon UART est dimensionné à 1024 octets (\texttt{gpsSerial.setRxBufferSize(1024)}) pour éviter les pertes de trames NMEA pendant les appels HTTP. La validité du fix est vérifiée via \texttt{gps.location.isValid()}. La commande série \texttt{g} affiche le nombre de satellites, la précision HDOP, et le comptage de trames valides vs.\ corrompues (\texttt{gps.passedChecksum()} vs.\ \texttt{gps.failedChecksum()}). En intérieur, aucune coordonnée de substitution n'est envoyée (option \texttt{TEST\_INDOOR\_GPS\_COORDS~=~false}).
+    \item \textbf{GPS NEO-6M~:} le tampon UART est porté à 1024 octets (\texttt{gpsSerial.\allowbreak setRxBufferSize\allowbreak(1024)}) pour éviter les pertes de trames pendant les appels HTTP. La validité du fix est testée par \texttt{gps.location.isValid()}. La commande série \texttt{g} affiche satellites, HDOP et trames valides/corrompues. En intérieur, aucune coordonnée de substitution n'est envoyée (\texttt{TEST\_INDOOR\_GPS\_COORDS~=~false}).
 
-    \item \textbf{Module SIM800L~:} le diagnostic via la commande série \texttt{p} exécute 6 commandes AT (\texttt{AT}, \texttt{AT+CCID}, \texttt{AT+CPIN?}, \texttt{AT+CSQ}, \texttt{AT+CREG?}, \texttt{AT+COPS?}) pour vérifier la communication, la présence de la SIM, le niveau de signal et l'enregistrement réseau. Le SMS de test est déclenché par la commande \texttt{m}.
+    \item \textbf{Module SIM800L~:} la commande série \texttt{p} exécute 6 commandes AT (\texttt{AT}, \texttt{AT+CCID}, \texttt{AT+CPIN?}, \texttt{AT+CSQ}, \texttt{AT+CREG?}, \texttt{AT+COPS?}) pour contrôler la communication, la SIM, le signal et l'enregistrement réseau. Un SMS de test est déclenché par la commande \texttt{m}~: l'envoi a été réalisé et le SMS a bien été reçu.
 
-    \item \textbf{Température et gaz~:} aucun capteur physique n'est connecté. Les valeurs sont des constantes logicielles ($T = 25{,}0$\,°C, gaz~$= 150$\,mV). Les seuils associés ($T_{\text{jaune}} = 45$\,°C, $T_{\text{rouge}} = 60$\,°C, gaz$_{\text{jaune}} = 300$\,mV, gaz$_{\text{rouge}} = 800$\,mV) ne sont donc pas testés en conditions réelles.
+    \item \textbf{Température et gaz~:} aucun capteur physique. Les seuils associés ($T_{\text{jaune}} = 45$\,°C, $T_{\text{rouge}} = 60$\,°C, gaz$_{\text{jaune}} = 300$\,mV, gaz$_{\text{rouge}} = 800$\,mV) ne sont donc pas testés.
 \end{itemize}
 
 \subsection{Scénarios de test}
@@ -294,45 +339,39 @@ Le prototype wearable utilise l'antenne PCB interne de l'ESP32 pour la communica
 \centering
 \caption{Scénarios de test fonctionnel du prototype SentinelBand.}
 \label{tab:scenarios}
-\small
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2cm} >{\raggedright\arraybackslash}p{3cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{2.5cm}}
+\footnotesize
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
 \toprule
-\textbf{Scénario} & \textbf{Entrée / Stimulus} & \textbf{Seuils} & \textbf{Sortie attendue} & \textbf{Résultat} \\
+\textbf{Scénario} & \textbf{Stimulus} & \textbf{Seuils} & \textbf{Sortie attendue} & \textbf{Statut} \\
 \midrule
-État normal & Mouvement modéré, $|\vec{a}| \approx 1$\,g & --- & LED verte, pas de buzzer & Vérifié (code) \\
+État normal & Mouvement modéré, $|\vec{a}| \approx 1$\,g & --- & LED verte, pas de buzzer & Testé \\
 \addlinespace
-Immobilité prolongée & Aucun mouvement $>$20\,s & $\Delta t > 20$\,s & JAUNE, buzzer intermittent & Vérifié (code) \\
+Immobilité prolongée & Aucun mouvement $>$20\,s & $\Delta t > 20$\,s & JAUNE, buzzer intermittent & Testé (logs série) \\
 \addlinespace
-Chute simulée (série) & Commande \texttt{f} via moniteur série & Confiance $= 95\,\%$ injectée & JAUNE puis ROUGE, SMS & Vérifié (simulatedFall) \\
+Chute simulée (série) & Commande \texttt{f} & Confiance $= 95\,\%$ injectée & JAUNE puis ROUGE, SMS, push & Testé (chaîne d'alerte) \\
 \addlinespace
-Chute physique réelle & Lâcher contrôlé du boîtier depuis 1\,m & FSM 4 phases, conf. $\geq 60\,\%$ & JAUNE ou ROUGE selon conf. & À valider terrain \\
+Chute physique réelle & Lâcher/chute contrôlée sur matelas & FSM 4 phases, conf. $\geq 60$ & JAUNE ou ROUGE selon confiance & À valider (protocole défini) \\
 \addlinespace
-Forçage JAUNE (série) & Commande \texttt{j} & --- & Retour JAUNE immédiat & Vérifié (code) \\
+Forçage JAUNE / ROUGE (série) & Commandes \texttt{j} / \texttt{r} & --- & Passage à l'état demandé (+ SMS en ROUGE) & Implémenté \\
 \addlinespace
-Forçage ROUGE (série) & Commande \texttt{r} & --- & Retour ROUGE + SMS & Vérifié (code) \\
+Annulation & Appui GPIO\,33 & Holdoff 15\,s & Retour NORMAL & Implémenté \\
 \addlinespace
-Annulation & Appui bouton GPIO\,33 & Holdoff 15\,s & Retour NORMAL & Vérifié (code) \\
+Escalade JAUNE$\rightarrow$ROUGE & Pas d'appui pendant 15\,s & \texttt{YELLOW\_TIMEOUT\_MS} & ROUGE + SMS & Testé (via chute simulée) \\
 \addlinespace
-Escalade JAUNE$\rightarrow$ROUGE & Timeout 15\,s sans bouton & \texttt{YELLOW\_TIMEOUT\_MS} & Passage ROUGE + SMS & Vérifié (code) \\
+Transmission API & HTTP POST & Code 2xx & Données en base & Testé (HTTP 200 dans les logs) \\
 \addlinespace
-Transmission API & Envoi HTTP POST & Code 2xx & Données en BDD & Vérifié (API opérationnelle) \\
+Reconnexion Wi-Fi & Coupure du point d'accès & Tentative toutes les 8\,s & Reconnexion automatique & Testé \\
 \addlinespace
-Reconnexion Wi-Fi & Coupure réseau & Tentative toutes 8\,s & Reconnexion auto & Vérifié (code) \\
-\addlinespace
-Envoi SMS & Alerte ROUGE & \texttt{AT+CMGS} & SMS reçu & Vérifié (diagnostic AT) \\
+Envoi SMS & Alerte ROUGE & \texttt{AT+CMGS} & SMS reçu & Testé (SMS reçu) \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \subsection{Protocole de test de chute}
 
-Pour les tests de chute réelle, le boîtier est fixé au poignet avec un bandeau élastique. Trois types de chutes sont reproduits~:
-\begin{itemize}
-    \item \textbf{Chute avant} (forward fall)~: inclinaison progressive jusqu'à la perte d'équilibre, chute sur les genoux/mains~;
-    \item \textbf{Chute latérale} (lateral fall)~: perte d'équilibre sur le côté, impact sur la hanche~;
-    \item \textbf{Chute arrière} (backward fall)~: recul et chute en arrière sur les fesses/dos.
-\end{itemize}
-La commande série \texttt{s} est utilisée pour lire l'état complet (état FSM, accélération, gyroscope, phase) à chaque instant. Les logs série (115200\,bauds, préfixe \texttt{[T+Xs]}) constituent la trace horodatée des essais.
+Pour les chutes réelles, le boîtier est fixé à la ceinture par un bandeau élastique et les chutes sont réalisées sur matelas. Trois types de chutes sont prévus~: avant (perte d'équilibre, réception sur genoux/mains), latérale (impact sur la hanche) et arrière (chute sur les fesses/dos). La commande série \texttt{s} permet de lire l'état complet (phase FSM, accélération, gyroscope), et les logs série (115200\,bauds, préfixe \texttt{[T+Xs]}) constituent la trace horodatée des essais. Ce protocole est défini~; ses résultats ne sont pas encore disponibles et le tableau~\ref{tab:chutes_reelles} est à renseigner.
+
+
 
 % =====================================================================
 %              IV. RÉSULTATS
@@ -341,7 +380,7 @@ La commande série \texttt{s} est utilisée pour lire l'état complet (état FSM
 
 \subsection{Algorithme de détection de chute}
 
-L'algorithme FSM implémenté opère en quatre phases séquentielles avec les paramètres suivants, extraits directement du code embarqué (\texttt{SentinelBand\_NoSIM.ino})~:
+L'algorithme FSM opère en quatre phases séquentielles. Les paramètres suivants sont extraits du code embarqué (\texttt{SentinelBand\_NoSIM.ino})~:
 
 \begin{table}[H]
 \centering
@@ -361,7 +400,7 @@ L'algorithme FSM implémenté opère en quatre phases séquentielles avec les pa
 \multirow{2}{*}{Phase 3 --- Impact} & Seuil pic d'accélération & $> 2{,}3$\,g \\
  & Délai max après apesanteur & 800\,ms \\
 \addlinespace
-\multirow{3}{*}{Phase 4 --- Posture} & Seuil angle de gîte & $> 50$\,° \\
+\multirow{3}{*}{Phase 4 --- Posture} & Seuil angle de gîte & $> 50$\,° pendant 5\,s \\
  & Seuil immobilité gyroscope & $< 20$\,°/s \\
  & Bande de tolérance $|\vec{a}|$ & $\bigl||\vec{a}| - 1\bigr| < 0{,}15$\,g \\
 \addlinespace
@@ -373,45 +412,53 @@ Score & Confiance minimale & $\geq 60$ \\
 \end{tabular}
 \end{table}
 
-Le score de confiance global est calculé par pondération des trois phases actives~:
+La phase 1 (pré-chute) est obligatoire~: sans agitation gyroscopique supérieure à 80\,°/s dans la fenêtre d'observation de 500\,ms, la FSM ne progresse pas vers la phase d'apesanteur. Elle n'entre toutefois pas dans le score de confiance, qui pondère les trois autres phases~:
 \begin{equation}
     C_{\text{final}} = 0{,}35 \times S_{\text{FF}} + 0{,}45 \times S_{\text{impact}} + 0{,}20 \times S_{\text{posture}}
     \label{eq:confidence}
 \end{equation}
 où~:
 \begin{itemize}
-    \item $S_{\text{FF}}$ est le score de la phase d'apesanteur~: moyenne du score de durée (60 si 80--199\,ms, 100 si 200--599\,ms, 70 si 600--1499\,ms) et du score de magnitude minimale (100 si $|\vec{a}|_{\min}<0{,}2$\,g, 75 si $<0{,}4$\,g, 50 sinon)~;
-    \item $S_{\text{impact}}$ est le score du pic d'accélération à l'impact (30 si pic $<2{,}3$\,g, 80 si $<4$\,g, 100 si $<7$\,g, 60 au-delà)~;
-    \item $S_{\text{posture}}$ est le score d'angle post-chute, proportionnel à l'angle de gîte au-delà de 50° (équation~: $\min\!\left(\frac{\theta - 50}{40} \times 100, 100\right)$).
+    \item $S_{\text{FF}}$ est la moyenne de deux sous-scores. Score de durée~: 60 si 80--199\,ms, 100 si 200--599\,ms, 70 si 600--1499\,ms. Score de magnitude minimale~: 100 si $|\vec{a}|_{\min}<0{,}2$\,g, 75 si $<0{,}4$\,g, 50 sinon~;
+    \item $S_{\text{impact}}$ est le score du pic à l'impact~: 30 si pic $<2{,}3$\,g, 80 si $<4$\,g, 100 si $<7$\,g, 60 au-delà. La baisse à 60 pour les pics $\geq 7$\,g peut s'interpréter comme une pénalisation de pics extrêmes, possiblement dus à un choc contre un objet plutôt qu'à une chute~; ce choix est empirique et la saturation du capteur à 8\,g limite de toute façon la mesure~;
+    \item $S_{\text{posture}} = \min\!\left(\frac{\theta - 50}{40} \times 100,\ 100\right)$, où $\theta$ est l'angle de gîte en degrés.
 \end{itemize}
 
-L'algorithme inclut plusieurs mécanismes de rejet des faux positifs~: reset automatique si la durée d'apesanteur est hors de l'intervalle [80--1500]\,ms (geste brusque sans chute libre réelle), reset si l'impact ne survient pas dans les 800\,ms suivant la fin de l'apesanteur, et reset si la personne se relève (angle $<30$° avec mouvement pendant $>10$\,s).
+Plusieurs mécanismes limitent les faux positifs~: reset si la durée d'apesanteur sort de l'intervalle [80~; 1500[\,ms, reset si l'impact ne survient pas dans les 800\,ms suivant l'apesanteur, et reset si la personne se relève ($\theta<30$° avec mouvement pendant $>10$\,s).
+
+
 
 \subsection{Essais fonctionnels}
 
-\textbf{Chute simulée (commande série \texttt{f})~:} la simulation injecte directement une chute parfaite avec $\texttt{fallConfidence}=95\,\%$, déclenchant la séquence JAUNE$\rightarrow$ROUGE avec envoi SMS. Ce test a été reproduit systématiquement pour valider la chaîne d'alerte complète~: buzzer, LED, POST HTTP vers l'API, et envoi de la notification push.
+\textbf{Chute simulée (commande \texttt{f})~:} la simulation injecte une chute parfaite avec \texttt{fallConfidence}$=95\,\%$ et déclenche la séquence JAUNE$\rightarrow$ROUGE. Ce test, reproduit à plusieurs reprises, valide la chaîne d'alerte~: buzzer, LED, POST HTTP vers l'API et notification push. Il ne valide \emph{pas} la détection elle-même, puisque la FSM est court-circuitée.
 
-\textbf{Immobilité prolongée~:} après 20\,s d'immobilité détectée (condition~: $\texttt{gyroDps}<20\,°/s$ et $\bigl||\vec{a}|-1\bigr|<0{,}15$\,g sur 20\,s), le système entre en état JAUNE avec le motif \texttt{IMMOBILITE}. Le comportement a été vérifié par inspection des logs série.
+\textbf{Immobilité prolongée~:} après 20\,s d'immobilité ($\texttt{gyroDps}<20$\,°/s et $\bigl||\vec{a}|-1\bigr|<0{,}15$\,g), le système passe en JAUNE avec le motif \texttt{IMMOBILITE}, observé dans les logs série.
 
-\textbf{Reconnexion Wi-Fi~:} la déconnexion volontaire du point d'accès a confirmé la tentative automatique de reconnexion toutes les 8\,s avec le log \texttt{[T+Xs] Wi-Fi non connecté : nouvelle tentative}.
+\textbf{Reconnexion Wi-Fi~:} la déconnexion volontaire du point d'accès a confirmé une nouvelle tentative toutes les 8\,s (log \texttt{[T+Xs] Wi-Fi non connecté : nouvelle tentative}).
 
-\textbf{Transmission télémétrique~:} les données JSON transmises incluent~: \texttt{state}, \texttt{reason}, \texttt{temp\_c}, \texttt{gas\_mv}, \texttt{acc\_g}, \texttt{gyro\_dps}, \texttt{gps\_fix}, \texttt{uptime\_s}, \texttt{fall\_phase}, \texttt{fall\_confidence}, \texttt{posture\_angle\_deg} et \texttt{source} (\texttt{"REEL"}). La réponse HTTP 200 est confirmée dans les logs avec le préfixe \texttt{[API] Envoi OK HTTP 200}.
+\textbf{Transmission télémétrique~:} le JSON transmis contient \texttt{state}, \texttt{reason}, \texttt{temp\_c}, \texttt{gas\_mv}, \texttt{acc\_g}, \texttt{gyro\_dps}, \texttt{gps\_fix}, \texttt{uptime\_s}, \texttt{fall\_phase}, \texttt{fall\_confidence}, \texttt{posture\_angle\_deg} et \texttt{source} (\texttt{"REEL"}). La réponse HTTP~200 est confirmée dans les logs (\texttt{[API] Envoi OK HTTP 200}).
 
-\subsection{Transmission et latence}
 
+
+\subsection{Chronologie et latences}
+
+Les paramètres de la FSM permettent de calculer la chronologie suivante à partir du début de la chute libre (valeurs théoriques, non chronométrées)~:
 \begin{itemize}
-    \item Période de télémétrie~: 4\,s en état NORMAL, 2\,s en état JAUNE ou ROUGE (vérifié dans le code, constante \texttt{periode}).
-    \item Timeout HTTP~: 2500\,ms (connexion) + 3000\,ms (réponse) --- total 5{,}5\,s maximum par cycle.
-    \item Latence de détection de chute (FSM)~: de 80\,ms (durée minimale d'apesanteur) à $\sim$1{,}6\,s (apesanteur max + impact) avant confirmation, suivis de 5\,s de validation de posture. Soit 5--7\,s entre l'événement physique et l'état JAUNE, puis 15\,s de timeout avant ROUGE.
-    \item Latence de notification push~: dépend de la période de télémétrie (2\,s en alerte) + le traitement serveur ($<$100\,ms) + le délai Expo Push Service (typiquement $<$5\,s selon la documentation Expo). La latence totale estimée est de 2--10\,s après passage en ROUGE.
-    \item SMS d'urgence~: le module SIM800L utilise la commande \texttt{AT+CMGS} avec encodage PDU ou texte. Le délai d'envoi dépend de la qualité du signal GSM (typiquement 2--10\,s). La réussite est confirmée par la réponse \texttt{+CMGS: <ref>}.
+    \item \textbf{Apesanteur~:} 80 à 1500\,ms.
+    \item \textbf{Impact~:} au plus 800\,ms après la fin de l'apesanteur, soit au plus 2,3\,s après le début de la chute.
+    \item \textbf{Validation de posture~:} 5\,s après l'impact. L'état JAUNE est donc atteint environ \textbf{5 à 7,5\,s} après le début de la chute.
+    \item \textbf{Escalade~:} 15\,s sans appui sur le bouton, soit ROUGE environ \textbf{20 à 22,5\,s} après le début de la chute.
+    \item \textbf{Notification distante~:} période de télémétrie de 2\,s en alerte, traitement serveur $<$100\,ms, puis délai Expo Push Service (typiquement quelques secondes selon la documentation Expo), soit environ 2 à 7\,s après le passage en ROUGE.
 \end{itemize}
+Le délai total entre le début de la chute et la notification sur l'application est donc estimé à \textbf{22 à 30\,s}. Les timeouts HTTP (2500\,ms de connexion et 3000\,ms de réponse, soit 5,5\,s maximum par cycle) peuvent le rallonger. La télémétrie est émise toutes les 4\,s en NORMAL et toutes les 2\,s en JAUNE/ROUGE. Le SMS dépend de la qualité du signal GSM (typiquement 2 à 10\,s) et son succès est confirmé par la réponse \texttt{+CMGS: <ref>}.
 
 \subsection{Architecture logicielle backend et mobile}
 
-Le backend API est construit sur Node.js ($\geq$18) avec Express~4.21.0, communiquant avec une base PostgreSQL~16 déployée via Docker Compose. Le schéma de base de données comprend six tables~: \texttt{users}, \texttt{devices}, \texttt{colleague\_links}, \texttt{telemetry}, \texttt{device\_status} et \texttt{alerts}. L'authentification repose sur JWT (durée 30~jours, bibliothèque jsonwebtoken~9.0.2) et les clés API des boîtiers sont stockées sous forme de hachés SHA-256 (bibliothèque \texttt{crypto}, native Node.js). Les mots de passe utilisateurs sont hachés avec bcryptjs (10 rounds de sel). La table \texttt{device\_status} contient le dernier état connu pour une lecture rapide, tandis que \texttt{telemetry} archive l'intégralité de l'historique (index composite sur \texttt{device\_id} et \texttt{ts DESC}).
+Le backend est construit sur Node.js ($\geq$18) avec Express~4.21.0 et PostgreSQL~16 déployé par Docker Compose. Le schéma comprend six tables~: \texttt{users}, \texttt{devices}, \texttt{colleague\_links}, \texttt{telemetry}, \texttt{device\_status} et \texttt{alerts}. L'authentification repose sur JWT (30~jours, jsonwebtoken~9.0.2)~; les clés API des boîtiers sont stockées sous forme de hachés SHA-256 et les mots de passe hachés avec bcryptjs (10 rounds). La table \texttt{device\_status} contient le dernier état connu~; \texttt{telemetry} archive l'historique (index composite sur \texttt{device\_id} et \texttt{ts DESC}).
 
-L'application mobile (React Native~0.86.3~/ Expo~57.0.27) comprend cinq écrans principaux~: authentification, liste des collègues avec télémétrie en temps réel (polling toutes les 3\,s), détail télémétrique (historique graphique, carte GPS, alertes), demandes de liaison avec consentement explicite, et profil opérateur (état du boîtier personnel, régénération de clé API, configuration URL serveur). Les notifications push sont acheminées via Expo Push Service (expo-notifications~57.0.22), le jeton JWT étant stocké de manière sécurisée via expo-secure-store~57.0.4 (Keychain iOS / Keystore Android). L'API backend transmet les notifications push à tous les collègues ayant accepté le lien de surveillance et possédant un \texttt{push\_token} enregistré, exclusivement lors du premier passage à l'état ROUGE.
+L'application mobile (React Native~0.86.3 / Expo~57.0.27) comprend cinq écrans~: authentification, liste des collègues avec télémétrie (polling toutes les 3\,s), détail télémétrique (historique, carte GPS, alertes), demandes de liaison avec consentement explicite, et profil opérateur (état du boîtier, régénération de clé API, URL serveur). Les notifications push passent par Expo Push Service (expo-notifications~57.0.22), le JWT étant stocké via expo-secure-store~57.0.4. L'API envoie les notifications aux collègues ayant accepté le lien de surveillance et possédant un \texttt{push\_token}, uniquement lors du premier passage à l'état ROUGE.
+
+
 
 % =====================================================================
 %              V. DISCUSSION
@@ -420,39 +467,40 @@ L'application mobile (React Native~0.86.3~/ Expo~57.0.27) comprend cinq écrans 
 
 \subsection{Discussion du prototype wearable}
 
-\textbf{Fiabilité des capteurs~:} le MPU6050 fournit des mesures cohérentes à 50\,Hz avec une communication I2C stable. Cependant, l'absence de capteurs de température et de gaz réels (valeurs constantes $T = 25$\,°C et gaz~$= 150$\,mV) empêche toute validation de la logique de détection d'anomalies environnementales. Les seuils associés ($T_{\text{jaune}} = 45$\,°C, $T_{\text{rouge}} = 60$\,°C, gaz$_{\text{jaune}} = 300$\,mV, gaz$_{\text{rouge}} = 800$\,mV) n'ont pas pu être testés en conditions réelles.
+\textbf{Fiabilité des capteurs~:} le MPU6050 fournit des mesures cohérentes à 50\,Hz en I2C stable. En revanche, l'absence de capteurs de température et de gaz réels empêche toute validation de la détection d'anomalies environnementales.
 
-\textbf{Pertinence des seuils de détection de chute~:} les seuils de l'algorithme FSM (tableau~\ref{tab:fsm_params}) ont été définis empiriquement en s'appuyant sur les valeurs rapportées dans la littérature~\cite{ref_fall_detection_threshold,ref_kangas}. Le seuil d'apesanteur ($|\vec{a}| < 0{,}55$\,g) et le seuil d'impact ($|\vec{a}| > 2{,}3$\,g) sont dans la plage des valeurs rapportées dans la littérature~\cite{ref_fall_detection_threshold}. Le score de confiance pondéré (équation~\ref{eq:confidence}) avec pondération plus forte sur l'impact (0{,}45) qu'en apesanteur (0{,}35) reflète l'importance diagnostique du pic d'accélération. Toutefois, la validation sur un nombre limité de scénarios contrôlés ne permet pas de quantifier les taux de faux positifs et de faux négatifs avec une signification statistique.
+\textbf{Pertinence des seuils~:} les seuils de la FSM (tableau~\ref{tab:fsm_params}) ont été fixés empiriquement, en s'inspirant de l'ordre de grandeur des valeurs rapportées dans la littérature~\cite{ref_fall_detection_threshold,ref_kangas}. La pondération plus forte de l'impact (0,45) que de l'apesanteur (0,35) traduit l'importance du pic d'accélération. Le caractère obligatoire de la phase de pré-chute (agitation gyroscopique $>80$\,°/s) filtre efficacement les faux positifs, mais peut provoquer des faux négatifs lorsqu'une chute n'implique pas de rotation marquée du la ceinture. Faute d'essais réels en nombre suffisant, les taux de faux positifs et de faux négatifs ne peuvent pas être quantifiés.
 
-\textbf{Mécanismes anti-faux-positifs~:} l'algorithme intègre plusieurs gardes~: (1)~la fenêtre de durée d'apesanteur [80--1500]\,ms élimine les micro-perturbations et les chutes libres irréalistes~; (2)~le délai max d'impact de 800\,ms après la fin de l'apesanteur prévient la confusion avec des rebonds~; (3)~le reset automatique si la personne se relève ($\theta<30$° avec mouvement $>10$\,s) évite les alarmes persistantes après rétablissement~; (4)~le délai de refroidissement post-annulation (\texttt{CANCEL\_HOLDOFF\_MS}~$=15$\,s) prévient les re-déclenchements immédiats.
+\textbf{Résolution temporelle et plage de mesure~:} à 50\,Hz, la durée minimale d'apesanteur de 80\,ms ne correspond qu'à 4 échantillons, et un impact très bref (quelques ms) peut être manqué. Un échantillonnage de 100 à 200\,Hz serait préférable. Par ailleurs, la plage $\pm$8\,g peut saturer lors d'un impact à la ceinture, ce qui tronque le pic mesuré et fausse $S_{\text{impact}}$.
 
-\textbf{Latence~:} l'architecture du système introduit plusieurs sources de latence cumulables~: la FSM requiert 80\,ms à 6{,}5\,s pour confirmer une chute (selon les phases traversées), suivis de 15\,s de timeout JAUNE$\rightarrow$ROUGE. La latence totale entre l'événement physique et l'alerte sur l'application mobile est estimée à 17--22\,s dans le scénario nominal (chute $\rightarrow$ JAUNE $\rightarrow$ timeout ROUGE $\rightarrow$ télémétrie 2\,s $\rightarrow$ notification push). Ce délai est acceptable dans le contexte de la surveillance de travailleurs isolés, où l'alerte précoce à 5--7\,s (état JAUNE + buzzer local) prime sur la notification distante.
+\textbf{Port à la ceinture~:} le critère de posture (angle de gîte $>50$°) est naturellement conçu pour un capteur placé sur le tronc. A la ceinture, l'orientation dépend de la position du bras et non de celle du corps, ce qui peut produire à la fois des faux négatifs (bras relevé après la chute) et des faux positifs (bras en position inclinée au repos). C'est une faiblesse structurelle de l'algorithme actuel.
 
-\textbf{Ergonomie~:} le prototype est actuellement basé sur une carte de développement ESP32 DevKit ($\sim$55~$\times$~28\,mm), dont l'encombrement n'est pas compatible avec un port prolongé en conditions réelles. Une conception PCB sur mesure réduirait les dimensions à $<$30~$\times$~20\,mm.
+\textbf{Mécanismes anti-faux-positifs~:} (1)~la fenêtre d'apesanteur [80~; 1500[\,ms écarte les micro-perturbations et les chutes libres irréalistes~; (2)~le délai maximal d'impact de 800\,ms évite la confusion avec des rebonds~; (3)~le reset si la personne se relève évite les alarmes persistantes~; (4)~le délai de refroidissement après annulation (\texttt{CANCEL\_HOLDOFF\_MS}~$=15$\,s) empêche un re-déclenchement immédiat. Le critère d'immobilité de 20\,s reste cependant sensible aux faux positifs~: un travailleur qui lit un plan ou effectue une tâche statique déclenchera une alerte JAUNE.
 
-\textbf{Consommation et autonomie~:} l'autonomie du système n'a pas été mesurée. La consommation est estimée comme suit~: ESP32 en mode actif Wi-Fi $\sim$160--260\,mA, GPS $\sim$45\,mA, SIM800L en veille $\sim$7\,mA (en communication $\sim$200--400\,mA en pics). Sans mode deep sleep, la consommation totale est estimée à $\sim$250--300\,mA en continu, soit 8 à 10\,h d'autonomie avec une batterie LiPo 2500\,mAh.
+\textbf{Latence~:} l'alerte locale (JAUNE) intervient environ 5 à 7,5\,s après le début de la chute, car la validation de posture impose 5\,s après l'impact. La notification distante n'arrive qu'après l'escalade de 15\,s, soit 22 à 30\,s au total (section~IV.C). Ce compromis privilégie la réduction des fausses alertes distantes grâce à la fenêtre d'annulation, mais retarde les secours en cas de chute réelle avec perte de conscience. Il devrait être discuté avec un responsable sécurité.
 
-\textbf{Sécurité et confidentialité~:} les clés API sont générées par \texttt{crypto.randomBytes(24)} (48 caractères hex, entropie 192 bits) et stockées sous forme de hachés SHA-256 côté serveur. L'authentification JWT avec expiration à 30 jours est implémentée. Le système de liaison entre collègues requiert un consentement explicite (\texttt{status = 'pending' → 'accepted'}), conforme aux principes RGPD de minimisation et de consentement. Toutefois, la communication HTTP entre l'ESP32 et l'API n'est pas chiffrée (pas de HTTPS), ce qui constitue une vulnérabilité en environnement de production.
+\textbf{Ergonomie~:} la carte ESP32 DevKit ($\sim$55~$\times$~28\,mm) n'est pas compatible avec un port prolongé. Un PCB sur mesure réduirait nettement l'encombrement.
 
-\textbf{Comportement en cas de perte de connexion~:} le code implémente une reconnexion Wi-Fi automatique toutes les 8\,s. En cas de perte prolongée, les alertes SMS via SIM800L assurent une redondance de communication. Les données télémétriques non transmises pendant la déconnexion sont perdues (pas de file d'attente locale).
+\textbf{Consommation et autonomie~:} l'autonomie n'a pas été mesurée. D'après les fiches techniques, l'ESP32 en Wi-Fi actif consomme $\sim$160--260\,mA, le GPS $\sim$45\,mA et le SIM800L $\sim$7\,mA en veille (pics de 200--400\,mA en communication). Sans deep sleep, la consommation totale est estimée à 250--300\,mA, soit, avec une LiPo de 3000 à 4000\,mAh et un rendement de boost d'environ 85\,\%, une autonomie de l'ordre de 8 à 14\,h. Ces valeurs proviennent des fiches techniques et non de mesures.
+
+\textbf{Sécurité et confidentialité~:} les clés API sont générées par \texttt{crypto.randomBytes(24)} (192 bits) et stockées hachées en SHA-256. Le lien entre collègues exige un consentement explicite (\texttt{pending} $\rightarrow$ \texttt{accepted}), en cohérence avec les principes de consentement et de minimisation du RGPD. En revanche, la communication ESP32 $\rightarrow$ API se fait en HTTP non chiffré~: la clé API transite en clair et un attaquant sur le même réseau pourrait la capturer pour usurper le boîtier.
+
+\textbf{Perte de connexion~:} la reconnexion Wi-Fi est automatique (toutes les 8\,s) et le SMS assure une redondance. Les données non transmises pendant une déconnexion sont perdues (pas de file d'attente locale).
 
 \subsection{Limites}
 \label{sec:limites}
 
-Les limites suivantes doivent être explicitement reconnues~:
-
 \begin{enumerate}
-    \item \textbf{Capteurs de température et de gaz non implémentés~:} les valeurs de température et de gaz sont des constantes logicielles. Les branches correspondantes de la logique de détection ne sont pas validées expérimentalement. L'ajout de capteurs LM35 et MQ-2 est nécessaire pour une validation complète.
-
-    \item \textbf{Validation statistique insuffisante de la détection de chute~:} les seuils ont été définis empiriquement. Aucune matrice de confusion (vrais positifs, faux positifs, vrais négatifs, faux négatifs) n'a été établie sur un panel de sujets suffisant. Une campagne de mesure structurée (minimum 30 chutes réelles $\times$ 3 types $\times$ plusieurs porteurs) est nécessaire pour calculer sensibilité et spécificité.
-
-    \item \textbf{Autonomie estimée plutôt que mesurée~:} aucune mesure de consommation électrique ou de durée de fonctionnement sur batterie n'a été effectuée. La valeur de 8--10\,h est une estimation basée sur les fiches techniques des composants, non une mesure réelle.
-
-    \item \textbf{Format du prototype non-wearable~:} la carte de développement ESP32 DevKit n'est pas compatible avec un port prolongé en conditions réelles. L'assemblage actuel reste à l'état de preuve de concept de laboratoire.
-
-    \item \textbf{Communication non chiffrée (HTTP) et sans tampon local~:} la transmission HTTP n'est pas sécurisée (HTTPS non implémenté sur ESP32 dans ce prototype). Les données non transmises pendant une déconnexion sont perdues (pas de stockage local NVS ou SD).
-
-    \item \textbf{Environnement de test non contrôlé~:} les tests ont été réalisés en environnement de bureau/laboratoire. Les interférences radio (2{,}4\,GHz saturé en milieu dense), les conditions de couverture GPS en intérieur et les propriétés GSM d'un site industriel réel n'ont pas été étudiées.
+    \item \textbf{Capteurs de température et de gaz non implémentés~:} valeurs constantes, branches de détection non validées (LM35 et MQ-2 à ajouter).
+    \item \textbf{Validation statistique absente~:} seuils empiriques, aucune matrice de confusion. Une campagne structurée (au moins 30 chutes par type, plusieurs porteurs, activités quotidiennes) est nécessaire pour estimer sensibilité et spécificité.
+    \item \textbf{Algorithme validé uniquement par injection~:} la chaîne d'alerte est testée, pas la détection sur chutes réelles.
+    \item \textbf{Échantillonnage et plage de mesure~:} 50\,Hz (4 échantillons dans 80\,ms) et saturation possible à $\pm$8\,g.
+    \item \textbf{Critère de posture inadapté à la ceinture~:} voir discussion.
+    \item \textbf{Autonomie estimée, non mesurée.}
+    \item \textbf{Format non wearable~:} carte de développement, preuve de concept de laboratoire.
+    \item \textbf{Communication non chiffrée et sans tampon local~:} HTTP en clair, pertes de données hors connexion.
+    \item \textbf{SIM800L limité à la 2G}, dont la couverture disparaît dans plusieurs pays.
+    \item \textbf{Environnement de test non contrôlé~:} essais en bureau/laboratoire, sans étude des interférences 2,4\,GHz, de la couverture GPS en intérieur ni du GSM d'un site industriel réel.
 \end{enumerate}
 
 % =====================================================================
@@ -460,11 +508,11 @@ Les limites suivantes doivent être explicitement reconnues~:
 % =====================================================================
 \section{Conclusion}
 
-Ce travail avait pour objectif la conception et la validation d'un dispositif wearable de surveillance de la sécurité des travailleurs industriels. Le prototype SentinelBand a été conçu autour d'un ESP32 intégrant un accéléromètre-gyroscope MPU6050 ($\pm$8\,g, 50\,Hz), un récepteur GPS NEO-6M, un module GSM SIM800L et des actionneurs d'alerte (buzzer, LED RGB). Un algorithme de détection de chute à machine à états finis en quatre phases (pré-chute, apesanteur, impact, posture) avec score de confiance pondéré (équation~\ref{eq:confidence}, seuil de décision à 60\,\%) a été implémenté, instrumenté et testé par simulation série. Une chaîne complète de supervision a été développée, comprenant une API REST Node.js/PostgreSQL (15 endpoints), une application mobile React Native avec notifications push et système de liaison inter-collègues avec consentement explicite, et un outil de simulation permettant les tests sans matériel.
+Ce travail a porté sur la conception et l'évaluation préliminaire d'un ceinture connecté de surveillance de la sécurité des travailleurs industriels. Le prototype SentinelBand repose sur un ESP32, un MPU6050 ($\pm$8\,g, 50\,Hz), un GPS NEO-6M, un module GSM SIM800L et des actionneurs d'alerte (buzzer, LED RGB). Une FSM de détection de chute en quatre phases avec score de confiance pondéré (équation~\ref{eq:confidence}, seuil de décision à 60) a été implémentée et instrumentée. Une chaîne de supervision complète a été développée~: API REST Node.js/PostgreSQL, application React Native avec notifications push et liaison entre collègues avec consentement explicite.
 
-Les essais fonctionnels ont validé la chaîne d'alerte complète (chute simulée $\rightarrow$ JAUNE $\rightarrow$ ROUGE $\rightarrow$ SMS $\rightarrow$ notification push) ainsi que la reconnexion Wi-Fi automatique. Les principales limites de ce travail sont l'absence de capteurs réels de température et de gaz, la validation statistique limitée de l'algorithme de détection de chute (seuils empiriques, matrice de confusion non établie), l'absence de mesure d'autonomie, et le format non-wearable du prototype actuel.
+Les essais par injection de chute ont validé la chaîne d'alerte (JAUNE, ROUGE, transmission à l'API, notification push) ainsi que la reconnexion Wi-Fi automatique. L'algorithme de détection n'a en revanche pas encore été validé sur des chutes réelles, et ses performances (sensibilité, spécificité) restent inconnues. Les autres limites majeures sont l'absence de capteurs de température et de gaz, l'échantillonnage à 50\,Hz, l'inadéquation du critère de posture au port à la ceinture, l'absence de mesure d'autonomie et la transmission non chiffrée.
 
-Deux perspectives réalistes se dégagent~: (1)~l'implémentation des capteurs LM35 et MQ-2 couplée à une campagne de validation statistique de la détection de chute sur un panel de sujets (sensibilité/spécificité)~; (2)~la miniaturisation du dispositif sur PCB sur mesure, l'optimisation de la consommation (mode deep sleep, période de télémétrie adaptative) et la sécurisation des échanges (HTTPS via bibliothèque mbedTLS disponible sur ESP32). La connexion d'une antenne textile externe, non réalisée dans ce prototype, constitue un travail futur d'intégration radiofréquence.
+Deux perspectives prioritaires se dégagent~: (1)~une campagne de validation sur chutes réelles et activités quotidiennes, avec relevé des traces IMU et calcul de sensibilité et de spécificité, assortie d'un échantillonnage plus élevé et d'une adaptation du critère de posture~; (2)~la miniaturisation sur PCB sur mesure, l'optimisation de la consommation (deep sleep, télémétrie adaptative), l'ajout des capteurs LM35 et MQ-2 et la sécurisation des échanges par HTTPS (mbedTLS sur ESP32). L'intégration d'une antenne textile externe, non réalisée ici, constitue un travail futur de conception radiofréquence.
 
 % =====================================================================
 %              RÉFÉRENCES
@@ -481,7 +529,7 @@ DOI~: \url{https://doi.org/10.1109/ACCESS.2020.2986329}
 \bibitem{ref_lone_worker}
 European Agency for Safety and Health at Work (EU-OSHA),
 ``Lone Workers --- Health and Safety Guidance,''
-Publication Office of the European Union, Luxembourg, 2021.
+Publication Office of the European Union, 2021.
 \url{https://osha.europa.eu/en/tools-and-resources/publications/lone-workers}
 
 \bibitem{ref_bayar2023}
@@ -508,15 +556,9 @@ T.~Mauldin, M.~Canby, V.~Metsis, A.~Ngu, and C.~Rivera,
 \textit{Sensors}, vol.~18, no.~10, p.~3363, 2018.
 DOI~: \url{https://doi.org/10.3390/s18103363}
 
-\bibitem{ref_esp32_fall_iot}
-M.~A.~Khan, A.~Mehmood, and W.~Iqbal,
-``IoT-Based Real-Time Fall Detection System for Elderly People Using ESP32 and MPU6050,''
-\textit{IEEE Internet of Things Journal}, 2024 (Early Access).
-DOI~: \url{https://doi.org/10.1109/JIOT.2024.3382945}
-
 \bibitem{ref_esp32_datasheet}
 Espressif Systems,
-``ESP32 Series Datasheet,'' v4.5,
+``ESP32 Series Datasheet,''
 \url{https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf}, consulté le 21~octobre~2026.
 
 \bibitem{ref_mpu6050_datasheet}
@@ -527,7 +569,7 @@ Document PS-MPU-6000A-00, 2013.
 
 \bibitem{ref_tinygps}
 M.~Hart,
-``TinyGPS++: A GPS library for Arduino,'' v1.0.3, 2023.
+``TinyGPS++: A GPS library for Arduino,''
 \url{https://github.com/mikalhart/TinyGPSPlus}
 
 \end{thebibliography}
@@ -545,22 +587,23 @@ M.~Hart,
 
 \begin{table}[H]
 \centering
-\caption{Brochage complet du prototype SentinelBand sur ESP32.}
+\caption{Brochage du prototype SentinelBand sur ESP32.}
+\small
 \begin{tabular}{l l l l}
 \toprule
 \textbf{GPIO ESP32} & \textbf{Composant} & \textbf{Signal} & \textbf{Note} \\
 \midrule
-21 & MPU6050 & SDA (I2C) & Résistance pull-up 4{,}7\,k$\Omega$ \\
-22 & MPU6050 & SCL (I2C) & Résistance pull-up 4{,}7\,k$\Omega$ \\
-16 & GPS NEO-6M & RX (UART2) $\leftarrow$ TX GPS & Tampon 1024 octets \\
-17 & GPS NEO-6M & TX (UART2) $\rightarrow$ RX GPS & --- \\
-18 & SIM800L & RX (UART1) $\leftarrow$ TX SIM & Niveau 3{,}3\,V (pont diviseur si 5\,V) \\
-19 & SIM800L & TX (UART1) $\rightarrow$ RX SIM & --- \\
-4 & Buzzer piézo actif & Digital OUT & LOW = silencieux \\
-25 & LED RGB & Rouge & Cathode commune, résistance 100\,$\Omega$ \\
-26 & LED RGB & Vert & Cathode commune, résistance 100\,$\Omega$ \\
-27 & LED RGB & Bleu & Cathode commune, résistance 100\,$\Omega$ \\
-33 & Bouton poussoir NO & INPUT\_PULLUP & Actif à l'état BAS, debounce 300\,ms \\
+21 & MPU6050 & SDA (I2C) & Pull-up 4,7\,k$\Omega$ \\
+22 & MPU6050 & SCL (I2C) & Pull-up 4,7\,k$\Omega$ \\
+16 & GPS NEO-6M & RX UART2 $\leftarrow$ TX GPS & Tampon 1024 octets \\
+17 & GPS NEO-6M & TX UART2 $\rightarrow$ RX GPS & --- \\
+18 & SIM800L & RX UART1 $\leftarrow$ TX SIM & TX SIM800L $\approx$2,8\,V, lisible en 3,3\,V \\
+19 & SIM800L & TX UART1 $\rightarrow$ RX SIM & Diviseur conseillé sur cette ligne \\
+4 & Buzzer piézo actif & Sortie numérique & LOW = silencieux \\
+25 & LED RGB & Rouge & Cathode commune, 100\,$\Omega$ \\
+26 & LED RGB & Vert & Cathode commune, 100\,$\Omega$ \\
+27 & LED RGB & Bleu & Cathode commune, 100\,$\Omega$ \\
+33 & Bouton poussoir NO & \texttt{INPUT\_PULLUP} & Actif à l'état bas, debounce 300\,ms \\
 GND & MPU6050 AD0 & GND & Adresse I2C 0x68 \\
 \bottomrule
 \end{tabular}
@@ -568,39 +611,38 @@ GND & MPU6050 AD0 & GND & Adresse I2C 0x68 \\
 
 \subsection*{A.2 --- Organigramme du firmware}
 
-La boucle principale (\texttt{loop()}) s'exécute sans délai (non-bloquante) et appelle séquentiellement~:
-
+La boucle principale (\texttt{loop()}) est non bloquante et appelle successivement~:
 \begin{enumerate}
-    \item \textbf{\texttt{readGps()}} --- lecture de tous les octets UART disponibles, décodage NMEA par TinyGPSPlus
-    \item \textbf{\texttt{readSensors()}} --- lecture MPU6050 à 50\,Hz (toutes les 20\,ms), mise à jour du suivi d'immobilité, appel de \texttt{runFallFSM()}
-    \item \textbf{\texttt{checkButton()}} --- lecture GPIO\,33, annulation d'alerte si appui détecté (debounce 300\,ms)
-    \item \textbf{\texttt{checkSerial()}} --- traitement des commandes de débogage (c/n, f, j, r, t, s, g, m, p)
-    \item \textbf{\texttt{evaluateState()}} --- transition d'état NORMAL/JAUNE/ROUGE, déclenchement SMS si passage en ROUGE
-    \item \textbf{\texttt{updateBuzzer()}} --- mise à jour du buzzer selon l'état (silencieux/bip/continu)
-    \item \textbf{\texttt{updateLed()}} --- mise à jour LED RGB (vert/jaune/rouge)
-    \item \textbf{\texttt{telemetryTick()}} --- envoi HTTP POST si période écoulée (4\,s normal, 2\,s alerte) et Wi-Fi connecté
-    \item \textbf{Log série (1\,Hz)} --- affichage horodaté de l'état complet via \texttt{printStatus()}
+    \item \texttt{readGps()} --- lecture UART, décodage NMEA par TinyGPSPlus
+    \item \texttt{readSensors()} --- lecture MPU6050 à 50\,Hz, suivi d'immobilité, appel de \texttt{runFallFSM()}
+    \item \texttt{checkButton()} --- annulation d'alerte sur appui du GPIO\,33 (debounce 300\,ms)
+    \item \texttt{checkSerial()} --- commandes de débogage
+    \item \texttt{evaluateState()} --- transitions NORMAL/JAUNE/ROUGE, SMS au passage en ROUGE
+    \item \texttt{updateBuzzer()} et \texttt{updateLed()} --- actionneurs selon l'état
+    \item \texttt{telemetryTick()} --- POST HTTP si la période est écoulée (4\,s normal, 2\,s alerte) et Wi-Fi connecté
+    \item Log série à 1\,Hz via \texttt{printStatus()}
 \end{enumerate}
 
 \subsection*{A.3 --- Commandes série de débogage (115200\,bauds)}
 
 \begin{table}[H]
 \centering
-\caption{Commandes série disponibles sur le port USB de l'ESP32.}
+\caption{Commandes disponibles sur le port USB de l'ESP32.}
+\small
 \begin{tabular}{l l}
 \toprule
 \textbf{Touche} & \textbf{Action} \\
 \midrule
 \texttt{c} ou \texttt{n} & Annuler l'alerte en cours, retour à NORMAL \\
-\texttt{f} & Simuler une chute (confiance 95\,\%, déclenche JAUNE$\rightarrow$ROUGE) \\
+\texttt{f} & Simuler une chute (confiance 95\,\%) \\
 \texttt{j} & Forcer l'état JAUNE (\texttt{TEST\_MANUEL\_JAUNE}) \\
 \texttt{r} & Forcer l'état ROUGE (\texttt{TEST\_MANUEL\_ROUGE}) + SMS \\
 \texttt{t} & Forcer l'envoi immédiat de télémétrie \\
-\texttt{s} & Afficher le statut complet (état, capteurs, GPS, FSM) \\
-\texttt{g} & Diagnostic GPS (satellites, fix, HDOP, trames valides/corrompues) \\
-\texttt{m} & Envoyer un SMS de test au numéro configuré \\
-\texttt{p} & Diagnostic SIM800L complet (6 commandes AT) \\
-\texttt{AT...} & Envoyer directement une commande AT au SIM800L \\
+\texttt{s} & Afficher le statut complet \\
+\texttt{g} & Diagnostic GPS \\
+\texttt{m} & Envoyer un SMS de test \\
+\texttt{p} & Diagnostic SIM800L (6 commandes AT) \\
+\texttt{AT...} & Envoyer une commande AT directement au SIM800L \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -610,6 +652,7 @@ La boucle principale (\texttt{loop()}) s'exécute sans délai (non-bloquante) et
 \begin{table}[H]
 \centering
 \caption{Versions des bibliothèques et outils utilisés.}
+\small
 \begin{tabular}{l l l}
 \toprule
 \textbf{Composant} & \textbf{Technologie} & \textbf{Version} \\
@@ -622,7 +665,7 @@ Base de données & PostgreSQL & 16 \\
 Driver BDD & pg (node-postgres) & 8.12.0 \\
 Authentification & jsonwebtoken / bcryptjs & 9.0.2 / 2.4.3 \\
 Application mobile & React Native / Expo & 0.86.3 / 57.0.27 \\
-Navigation & React Navigation & 7.x (\texttt{@react-navigation/native} \textasciicircum7.1.14) \\
+Navigation & React Navigation & 7.x \\
 Notifications push & expo-notifications & 57.0.22 \\
 Stockage sécurisé & expo-secure-store & 57.0.4 \\
 Infrastructure BDD & Docker Compose + PostgreSQL & postgres:16 \\
@@ -630,67 +673,12 @@ Infrastructure BDD & Docker Compose + PostgreSQL & postgres:16 \\
 \end{tabular}
 \end{table}
 
-\subsection*{A.5 --- Lien vers le code source}
+\subsection*{A.5 --- Code source}
 
-Le code source complet (firmware ESP32, backend API Node.js, application mobile React Native) est disponible sur le dépôt Git du projet~:
+Le code complet (firmware ESP32, backend, application mobile) est disponible sur~:
 \begin{center}
-\url{https://github.com/AdemAboueb7/sentinelband}
+\url{https://github.com/AdemAboueb7/sentinelband.git}
 \end{center}
 
-\subsection*{A.6 --- Extrait de code : score de confiance (FSM phase CONFIRMED)}
-
-\begin{lstlisting}[language=C++, caption={Calcul du score de confiance dans la phase FP\_CONFIRMED du firmware ESP32.}]
-// Score final = FF*0.35 + Impact*0.45 + Posture*0.20
-fallConfidence = (int)(scoreFF * 0.35f + scoreImp * 0.45f + scorePos * 0.20f);
-
-if (fallConfidence >= FALL_MIN_CONFIDENCE) {  // FALL_MIN_CONFIDENCE = 60
-  fallArmed = true;
-}
-
-// Si la personne se releve (angle < 30 deg + mouvement > 10s) : reset
-if (postureAngleDeg < 30.0f && !still && now - impactAt > 10000) {
-  logLine("[FSM] Personne relevee -> reset FSM");
-  resetFallFSM();
-  fallArmed = false;
-}
-\end{lstlisting}
-
-% =====================================================================
-%     VÉRIFICATIONS DE CONFORMITÉ AU CAHIER DES CHARGES
-% =====================================================================
-\newpage
-\section*{Vérifications de conformité au cahier des charges}
-\addcontentsline{toc}{section}{Vérifications de conformité}
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{7cm} c >{\raggedright\arraybackslash}p{5cm}}
-\toprule
-\textbf{Critère du cahier des charges} & \textbf{Statut} & \textbf{Commentaire} \\
-\midrule
-Rapport de 10 à 15 pages hors annexes & $\checkmark$ & Respecté \\
-Structure en 6 sections + annexes & $\checkmark$ & Conforme \\
-Résumé de 150 à 220 mots & $\checkmark$ & $\sim$200 mots \\
-Mots-clés (4 à 6) & $\checkmark$ & 6 mots-clés \\
-État de l'art ($\geq$5 références) & $\checkmark$ & 10 références dont 5 sur la détection de chute \\
-Contribution explicite & $\checkmark$ & 2 contributions formulées (I.4) \\
-Scénario d'usage & $\checkmark$ & Décrit en section II.A \\
-Tableau d'exigences vérifiables & $\checkmark$ & Tableau~\ref{tab:exigences} (8 exigences) \\
-Architecture fonctionnelle & $\checkmark$ & Figure~\ref{fig:architecture} + description détaillée \\
-Nomenclature des composants & $\checkmark$ & Tableau~\ref{tab:nomenclature} (8 composants) \\
-Justification des choix composants & $\checkmark$ & Section II.D \\
-Tests prototype ESP décrits & $\checkmark$ & Section III (11 scénarios) \\
-Résultats prototype & $\checkmark$ & Section IV (FSM + essais + latence + backend) \\
-Discussion prototype & $\checkmark$ & Section V.A (8 aspects) \\
-Limites explicites & $\checkmark$ & Section V.B (6 limites listées) \\
-Pas de données inventées & $\checkmark$ & Toutes les valeurs extraites du code réel \\
-Conclusion 150--250 mots & $\checkmark$ & $\sim$220 mots \\
-Références vérifiables avec DOI & $\checkmark$ & DOI fournis pour toutes les références disponibles \\
-Annexe prototype & $\checkmark$ & Annexe A (brochage, organigramme, versions, code) \\
-Schémas de brochage & $\checkmark$ & Tableau A.1 (11 GPIO documentés) \\
-\bottomrule
-\end{tabularx}
-\end{table}
 
 \end{document}
