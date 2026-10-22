@@ -1,0 +1,2785 @@
+
+=================== PDF: c:\Users\admab\OneDrive\Bureau\projet wearable tech\SentinelBand — Core Circuitry.pdf ===================
+Num pages: 9
+
+--- Page 1 ---
+CORE 
+CIRCUITRY
+SentinelBand — Sécurité des travailleurs isolés
+Wearable Technologies — ESPRIT | Ameni Mersani
+--- Page 2 ---
+Membres de l’équipe
+Adem ABOUEB Aziz AYARI Nesrine FEZZANI
+Mohamed Khalil HAMMAMI Mohamed Wassef MNASRI
+--- Page 3 ---
+SentinelBand — Sécurité des travailleurs isolés
+Utilisateur cible
+Ouvrier / technicien isolé
+Électricien, agent de maintenance  
+ou d’exploitation
+Contexte
+Zone reculée ou dangereuse
+Sans supervision directe
+Risques : chute, gaz, chaleur
+Problème
+Une chute, un malaise ou une fuite de gaz peut passer inaperçu → secours retardés
+--- Page 4 ---
+Solution — SentinelBand
+Boîtier ceinture unique
+Chute et immobilité (MPU6050)
+Position GPS (GY-NEO6MV2)
+Gaz (MQ2) et température (LM35)
+Alerte à distance (SIM800L)
+Contraintes
+Pas de caméra
+Discret
+Intégré à la ceinture porte-outils
+Proche du centre de masse
+--- Page 5 ---
+Logique d’alerte
+Alerte jaune
+Chute, immobilité prolongée, gaz ou  
+température anormale
+LED RGB jaune + buzzer
+Vérifiable / annulable par le travailleur
+→
+Alerte rouge automatique
+Si danger confirmé ou anomalies multiples
+LED rouge + buzzer continu
+SMS avec position GPS via SIM800L
+Destinataires : collègues proches · centre de supervision
+--- Page 6 ---
+Architecture
+Capteurs
+MPU6050 : chute,  
+immobilité
+GY-NEO6MV2 : GPS
+MQ2 : gaz
+LM35 : température
+→
+ESP32 NodeMCU
+Centralisation des  
+données
+Analyse + gestion des  
+3 états
+Passerelle vers le réseau
+→
+Sorties locales
+LED RGB 4 broches
+Buzzer 2 broches
+Communication
+SIM800L : SMS  
+/ appel
+États : Normal  (surveillance continue) → Jaune  (vérification) → Rouge  (alerte + GPS)
+--- Page 7 ---
+Valeur créée
+Bénéfices
+Détection précoce
+Réponse ciblée
+Localisation GPS
+Détection gaz et  
+température
+Réduction du temps  
+d’intervention
+Objectif
+Temps de réponse après  
+alerte rouge : < 1 minute
+Indicateurs
+Taux de confirmation de  
+l’alerte jaune
+Taux de conversion jaune  
+→ rouge
+Taux de faux positifs
+--- Page 8 ---
+Limites
+Risques majeurs
+Faux positifs (alerte jaune) : fatigue d’alerte
+Faux négatifs (alerte rouge) si zone sans  
+couverture GSM
+Dérive et calibrage du MQ2
+Mesures de réduction
+Calibrage personnalisé des seuils
+Recoupement multi-capteurs : chute +  
+immobilité + gaz / température
+Confirmation avant alerte rouge automatique
+--- Page 9 ---
+MERCI DE 
+VOTRE ATTENTION
+
+
+=================== DOCX: c:\Users\admab\OneDrive\Bureau\projet wearable tech\SentinelBand — Guide d'implémentation en 5 phases.docx ===================
+SentinelBand — Guide d'implémentation en 5 phases
+Wearable Technologies — ESPRIT · ESP32 · MPU6050 · GY-NEO6MV2 · MQ2 · LM35 · SIM800L · LED RGB · buzzer
+0. Vue d'ensemble
+Exigence
+Réalisation
+Capteur → microcontrôleur, valeurs plausibles
+MPU6050 (I2C), LM35 et MQ2 (ADC), GPS (UART) ; contrôle de plage dans le code
+Condition / seuil → décision
+Machine à états NORMAL → JAUNE → ROUGE
+Actionneur / alerte
+LED RGB + buzzer
+Transmission / tableau de bord
+SMS via SIM800L + page web locale (Wi-Fi AP de l'ESP32)
+Journal série horodaté
+115200 bauds, préfixe [T+secondes] et heure UTC du GPS dès qu'il y a un fix
+Phase
+Étapes du protocole imposé
+Porte de sortie (go / no-go)
+1
+Alimentation, continuité, câblage
+Tensions et continuités conformes aux tableaux
+2
+Bus I2C / UART (SPI : aucun périphérique SPI dans ce projet)
+0x68 détecté ; octets NMEA reçus ; réponse OK du SIM800L
+3
+Code minimal, un module à la fois
+Chaque module donne des valeurs plausibles
+4
+Intégration
+Firmware complet, journal 1 Hz stable
+5
+Validation et preuves
+Scénarios réussis + journal horodaté archivé
+Hypothèses à vérifier : « LM32 » = LM35 (capteur de température) ; LED RGB à cathode commune (sinon mettre LED_ACTIVE_HIGH 0) ; buzzer actif ; un bouton poussoir optionnel sert à annuler l'alerte jaune (sinon : bouger, ou envoyer c sur le port série).
+Outils : Arduino IDE 2.x, carte « ESP32 Dev Module » (paquet Espressif), bibliothèque TinyGPSPlus (Mikal Hart) via le gestionnaire de bibliothèques. Aucune autre bibliothèque : MPU6050 et SIM800L sont pilotés en direct.
+Phase 1 — Alimentation, continuité, câblage
+1.1 Alimentation (règle n°1 : masses communes)
+Module
+Tension
+Source
+Remarque
+ESP32
+5 V USB
+PC / powerbank
+MPU6050, GY-NEO6MV2
+3,3 V
+broche 3V3
+MQ2, LM35
+5 V
+broche VIN
+MQ2 : chauffage ≈ 150 mA ; LM35 exige ≥ 4 V
+SIM800L
+3,7–4,2 V, pics 2 A
+alimentation dédiée (LiPo ou buck réglé à 4,0 V / 2 A) + condensateur 1000 µF
+Ne jamais l'alimenter par l'ESP32. Antenne obligatoire
+Toutes les masses (ESP32, SIM800L, capteurs, alimentation SIM) sont reliées ensemble.
+1.2 Brochage
+Module
+Broche module
+ESP32
+Note
+MPU6050
+SDA / SCL
+GPIO21 / GPIO22
+AD0 → GND (adresse 0x68)
+GY-NEO6MV2
+TX / RX
+GPIO16 / GPIO17
+TX module → RX ESP32 (croisé)
+SIM800L
+TX
+GPIO26
+SIM800L
+RX
+GPIO27
+diviseur : 1 kΩ en série + 2,2 kΩ vers GND
+SIM800L
+RST
+GPIO25
+MQ2
+AO
+GPIO34
+diviseur : 10 kΩ en série + 20 kΩ vers GND (5 V → 3,3 V)
+LM35
+Vout
+GPIO32
+condensateur 100 nF Vout–GND ; TO-92 face plate vers soi : +Vs, Vout, GND
+LED RGB (4 br.)
+R / V / B
+GPIO18 / 19 / 23
+220 Ω par couleur ; la broche la plus longue → GND
+Buzzer (2 br.)
++ / −
+GPIO4 / GND
+si > 20 mA : transistor 2N2222 + 1 kΩ
+Bouton (option)
+GPIO14 → GND
+INPUT_PULLUP
+Les GPIO34 et GPIO32 sont sur ADC1 (compatibles Wi-Fi). Les GPIO12 et GPIO0 sont évités (broches de démarrage).
+1.3 Continuité (multimètre hors tension, mode bip)
+Chaque fil du tableau 1.2 : bip entre la broche module et la broche ESP32.
+GND module ↔ GND ESP32 pour chaque module : bip.
+3V3 ↔ GND, 5V ↔ GND, VIN SIM ↔ GND : aucun bip (pas de court-circuit).
+TX ↔ RX non croisés : aucun bip entre deux broches de même sens.
+1.4 Tensions attendues (sous tension, sans code)
+Point
+Valeur attendue
+3V3 ESP32
+3,25–3,35 V
+VIN (5 V)
+4,7–5,2 V
+VCC SIM800L
+3,8–4,2 V, stable pendant l'enregistrement réseau
+MPU6050 VCC / GPS VCC
+3,3 V
+LM35 Vout
+≈ 0,2–0,35 V (20–35 °C)
+Point milieu diviseur MQ2
+≤ 3,3 V
+Porte de sortie : tout est conforme, sinon on ne passe pas à la phase 2.
+Phase 2 — Bus I2C et UART
+Pas de SPI dans ce projet. On teste d'abord le bus, sans logique applicative.
+2.1 Scanner I2C (attendu : 0x68)
+#include <Wire.h>void setup() {  Serial.begin(115200);  Wire.begin(21, 22);  Wire.setClock(100000);  delay(500);  int n = 0;  for (uint8_t a = 1; a < 127; a++) {    Wire.beginTransmission(a);    if (Wire.endTransmission() == 0) {      Serial.print("Trouve: 0x");      Serial.println(a, HEX);      n++;    }  }  Serial.print(n);  Serial.println(" peripherique(s). Attendu: 0x68 (MPU6050)");}void loop() {}
+Rien trouvé → SDA/SCL inversés, 3V3 absent, ou module HS. 0x69 → AD0 relié au 3V3.
+2.2 Passerelle UART (GPS ou SIM800L)
+Sérial Monitor : 115200 bauds, fin de ligne « NL et CR ».
+#include <Arduino.h>#define TARGET_SIM 0   // 0 = GPS (16/17), 1 = SIM800L (26/27)HardwareSerial dev(1);void setup() {  Serial.begin(115200);#if TARGET_SIM  dev.begin(9600, SERIAL_8N1, 26, 27);#else  dev.begin(9600, SERIAL_8N1, 16, 17);#endif  Serial.println("Passerelle prete");}void loop() {  while (dev.available()) Serial.write(dev.read());  while (Serial.available()) dev.write(Serial.read());}
+Cible
+Test
+Résultat attendu
+GPS
+rien à taper
+lignes $GPGGA, $GPRMC… toutes les secondes (fix non requis)
+SIM800L
+taper AT
+OK
+SIM800L
+AT+CPIN?
++CPIN: READY (carte SIM sans code PIN)
+SIM800L
+AT+CREG?
++CREG: 0,1 ou 0,5 (enregistré)
+SIM800L
+AT+CSQ
++CSQ: 10..31 (99 = pas de signal)
+GPS muet → inverser TX/RX. SIM800L muet → alimentation (phase 1.1), RX sans diviseur, ou antenne absente. Vérifier la couverture 2G (GSM 900/1800).
+Porte de sortie : 0x68 trouvé, NMEA reçu, OK du SIM800L.
+Phase 3 — Code minimal : banc de test par module
+Menu série : 1 MPU6050, 2 LM35, 3 MQ2, 4 GPS, 5 LED + buzzer, 6 SIM800L (AT), 7 SMS de test. Remplacer le numéro de TEST_NUMBER.
+// BANC DE TEST - Phase 3#include <Arduino.h>#include <Wire.h>#include <TinyGPSPlus.h>#include <stdarg.h>HardwareSerial gpsSerial(2), simSerial(1);TinyGPSPlus gps;const int PIN_SDA = 21, PIN_SCL = 22, PIN_GPS_RX = 16, PIN_GPS_TX = 17;const int PIN_SIM_RX = 26, PIN_SIM_TX = 27, PIN_MQ2 = 34, PIN_LM35 = 32;const int PIN_R = 18, PIN_G = 19, PIN_B = 23, PIN_BUZ = 4;const int LED_ON = HIGH;                 // LOW si anode communeconst char* TEST_NUMBER = "+216XXXXXXXX";void P(const char* f, ...) {  char b[200];  va_list a; va_start(a, f); vsnprintf(b, sizeof b, f, a); va_end(a);  Serial.print("[T+"); Serial.print(millis() / 1000.0, 3); Serial.print("] "); Serial.println(b);}void menu() {  Serial.println();  Serial.println("1=MPU6050 2=LM35 3=MQ2 4=GPS 5=LED+buzzer 6=SIM800L(AT) 7=SMS test");}void tMpu() {  Wire.begin(PIN_SDA, PIN_SCL);  Wire.beginTransmission(0x68); Wire.write(0x6B); Wire.write(0);  if (Wire.endTransmission() != 0) { P("MPU KO: pas d'ACK 0x68 (Phase 2)"); return; }  Wire.beginTransmission(0x68); Wire.write(0x1C); Wire.write(0x10); Wire.endTransmission();   // +-8 g  for (int n = 0; n < 25; n++) {    Wire.beginTransmission(0x68); Wire.write(0x3B); Wire.endTransmission(false);    Wire.requestFrom((uint8_t)0x68, (uint8_t)14);    int16_t r[7];    for (int i = 0; i < 7; i++) { uint8_t h = Wire.read(); uint8_t l = Wire.read(); r[i] = (int16_t)((h << 8) | l); }    float ax = r[0] / 4096.0f, ay = r[1] / 4096.0f, az = r[2] / 4096.0f;    float g = sqrtf(ax * ax + ay * ay + az * az);    P("acc=%.2f %.2f %.2f |a|=%.2f g  gyr=%.0f %.0f %.0f dps  puce=%.1f C", ax, ay, az, g, r[4] / 131.0f, r[5] / 131.0f, r[6] / 131.0f, r[3] / 340.0f + 36.53f);    delay(200);  }  P("Attendu: |a| = 1.00 g +-0.1 a l'arret ; gyr < 5 dps ; puce 20-45 C");}void tLm35() {  analogSetPinAttenuation(PIN_LM35, ADC_6db);  for (int n = 0; n < 20; n++) {    uint32_t s = 0;    for (int i = 0; i < 32; i++) { s += analogReadMilliVolts(PIN_LM35); delay(1); }    float mv = s / 32.0f;    P("LM35 %.0f mV -> %.1f C", mv, mv / 10.0f);    delay(500);  }  P("Attendu: 200-350 mV (20-35 C). Doigt sur le capteur: +3 a +8 C en 30 s");}void tMq2() {  analogSetPinAttenuation(PIN_MQ2, ADC_11db);  for (int n = 0; n < 20; n++) {    uint32_t s = 0;    for (int i = 0; i < 32; i++) { s += analogReadMilliVolts(PIN_MQ2); delay(1); }    P("MQ2 AO(apres diviseur) = %lu mV", (unsigned long)(s / 32));    delay(500);  }  P("Attendu: valeur stable 100-1500 mV apres prechauffage ; monte de plusieurs centaines de mV avec du gaz de briquet (non allume)");}void tGps() {  gpsSerial.begin(9600, SERIAL_8N1, PIN_GPS_RX, PIN_GPS_TX);  uint32_t t0 = millis(), last = 0, chars = 0;  while (millis() - t0 < 60000) {    while (gpsSerial.available()) { gps.encode(gpsSerial.read()); chars++; }    if (millis() - last >= 2000) {      last = millis();      P("octets=%lu phrases_ok=%lu crc_ko=%lu sats=%d fix=%s", (unsigned long)chars, (unsigned long)gps.passedChecksum(), (unsigned long)gps.failedChecksum(), (int)gps.satellites.value(), gps.location.isValid() ? "OUI" : "non");      if (gps.location.isValid()) P("lat=%.6f lon=%.6f hdop=%.1f", gps.location.lat(), gps.location.lng(), gps.hdop.hdop());    }  }  if (chars == 0) P("AUCUN octet: TX/RX inverses ? alim 3V3 ? (Phase 2)");  else P("Fix a l'exterieur: 30 s a 2 min (demarrage a froid). Attendu: sats >= 4");}void setRgb(bool r, bool g, bool b) {  digitalWrite(PIN_R, r ? LED_ON : (LED_ON ^ 1));  digitalWrite(PIN_G, g ? LED_ON : (LED_ON ^ 1));  digitalWrite(PIN_B, b ? LED_ON : (LED_ON ^ 1));}void tIo() {  pinMode(PIN_R, OUTPUT); pinMode(PIN_G, OUTPUT); pinMode(PIN_B, OUTPUT); pinMode(PIN_BUZ, OUTPUT);  P("Rouge");  setRgb(1, 0, 0); delay(700);  P("Vert");   setRgb(0, 1, 0); delay(700);  P("Bleu");   setRgb(0, 0, 1); delay(700);  P("Jaune (R+V)"); setRgb(1, 1, 0); delay(700);  setRgb(0, 0, 0);  P("Buzzer: 3 bips");  for (int i = 0; i < 3; i++) { digitalWrite(PIN_BUZ, HIGH); delay(200); digitalWrite(PIN_BUZ, LOW); delay(300); }}void at(const char* c) {  while (simSerial.available()) simSerial.read();  P("> %s", c);  simSerial.println(c);  uint32_t t0 = millis(); String r;  while (millis() - t0 < 1500) while (simSerial.available()) r += (char)simSerial.read();  r.trim();  P("< %s", r.c_str());}void tSim() {  simSerial.begin(9600, SERIAL_8N1, PIN_SIM_RX, PIN_SIM_TX);  for (int i = 0; i < 3; i++) at("AT");  at("ATE0"); at("AT+CPIN?"); at("AT+CREG?"); at("AT+CSQ"); at("AT+COPS?");  P("Attendu: OK / +CPIN: READY / +CREG: 0,1 ou 0,5 / +CSQ: 10..31");}void tSms() {  simSerial.begin(9600, SERIAL_8N1, PIN_SIM_RX, PIN_SIM_TX);  at("AT+CMGF=1");  simSerial.print("AT+CMGS="); simSerial.print('"'); simSerial.print(TEST_NUMBER); simSerial.println('"');  delay(1500);  simSerial.print("Test SentinelBand"); simSerial.write(26);  uint32_t t0 = millis(); String r;  while (millis() - t0 < 20000) {    while (simSerial.available()) r += (char)simSerial.read();    if (r.indexOf("+CMGS") >= 0) break;  }  if (r.indexOf("+CMGS") >= 0) P("SMS envoye");  else P("SMS ECHEC: %s", r.c_str());}void setup() { Serial.begin(115200); delay(500); menu(); }void loop() {  if (!Serial.available()) return;  char c = Serial.read();  if (c < '1' || c > '7') return;  switch (c) {    case '1': tMpu(); break;    case '2': tLm35(); break;    case '3': tMq2(); break;    case '4': tGps(); break;    case '5': tIo(); break;    case '6': tSim(); break;    case '7': tSms(); break;  }  menu();}
+Valeurs plausibles (référence pour les phases 3 à 5)
+Mesure
+Au repos
+Plage valide (sinon capteur déclaré en défaut)
+Seuil jaune
+Seuil rouge
+Accélération |a|
+1,00 g ± 0,1
+0–8 g
+impact > 2,5 g puis immobilité
+—
+Gyroscope
+< 5 °/s
+0–250 °/s
+immobile si < 20 °/s
+—
+Température LM35
+20–35 °C
+0–120 °C
+≥ 45 °C
+≥ 60 °C
+Gaz MQ2 (écart à la ligne de base)
+± 50 mV
+20–3200 mV
+≥ +300 mV
+≥ +800 mV
+GPS
+≥ 4 satellites, HDOP < 3
+lat/lon cohérentes avec le lieu de test
+—
+—
+SIM800L
++CREG: 0,1/5, CSQ 10–31
+—
+—
+Porte de sortie : les six tests donnent des valeurs de ce tableau.
+Phase 4 — Intégration : firmware complet
+Ordre de mise en service : (1) téléverser avec SIM800L et GPS débranchés : MPU, capteurs, LED et buzzer doivent fonctionner seuls ; (2) brancher le GPS ; (3) brancher le SIM800L (alimentation dédiée) ; (4) tester le tableau de bord. Les modules absents sont signalés dans le journal sans bloquer le système.
+Logique : NORMAL (LED verte) → JAUNE (LED jaune clignotante + bips, annulable) → ROUGE (LED rouge rapide + buzzer + SMS avec position GPS). Le passage à ROUGE a lieu si l'alerte jaune n'est pas annulée dans le délai, ou immédiatement pour un gaz ou une température critiques. Si les conditions disparaissent (le travailleur bouge), le système revient seul à NORMAL.
+Commandes série (démonstration) : f impact simulé · t 65 °C · T 50 °C · g gaz +900 mV · G gaz +400 mV · n retour aux capteurs réels · c annuler.
+Renseigner PHONE_COLLEAGUE et PHONE_SUPERVISOR. DEMO_MODE 0 donne les délais réels.
+// SentinelBand v1.0 - ESP32 NodeMCU DevKit - Arduino IDE 2.x// Bibliotheque requise : TinyGPSPlus (Mikal Hart)#include <Arduino.h>#include <Wire.h>#include <TinyGPSPlus.h>#include <WiFi.h>#include <WebServer.h>#include <stdarg.h>// ===== CONFIGURATION =====#define DEMO_MODE         1   // 1 = delais courts (demo) ; 0 = delais reels#define ENABLE_DASHBOARD  1   // 1 = page web locale (Wi-Fi AP)#define LED_ACTIVE_HIGH   1   // 1 = cathode commune ; 0 = anode commune#define PHONE_COLLEAGUE   "+216XXXXXXXX"#define PHONE_SUPERVISOR  "+216YYYYYYYY"// ===== BROCHES =====const int PIN_SDA = 21, PIN_SCL = 22;const int PIN_GPS_RX = 16, PIN_GPS_TX = 17;const int PIN_SIM_RX = 26, PIN_SIM_TX = 27, PIN_SIM_RST = 25;const int PIN_MQ2 = 34, PIN_LM35 = 32;const int PIN_LED_R = 18, PIN_LED_G = 19, PIN_LED_B = 23;const int PIN_BUZZER = 4, PIN_BTN = 14;// ===== SEUILS ET DELAIS =====#if DEMO_MODEconst uint32_t STILL_AFTER_FALL_MS = 5000, IMMOBILE_MS = 20000, YELLOW_TIMEOUT_MS = 15000, MQ2_WARMUP_S = 30;#elseconst uint32_t STILL_AFTER_FALL_MS = 15000, IMMOBILE_MS = 120000, YELLOW_TIMEOUT_MS = 30000, MQ2_WARMUP_S = 180;#endifconst uint32_t FALL_WINDOW_MS = 30000, CANCEL_HOLDOFF_MS = 15000, SMS_REPEAT_MS = 60000, LOG_MS = 1000;const float IMPACT_G = 2.5f, STILL_GYRO_DPS = 20.0f, STILL_G_BAND = 0.15f;const float TEMP_YELLOW = 45.0f, TEMP_RED = 60.0f;const int GAS_YELLOW_DELTA = 300, GAS_RED_DELTA = 800;   // mV au-dessus de la ligne de base// ===== ETAT GLOBAL =====enum State { NORMAL, YELLOW, RED };State state = NORMAL;HardwareSerial gpsSerial(2), simSerial(1);TinyGPSPlus gps;WebServer server(80);float ax, ay, az, gx, gy, gz, accG = 1.0f, gyroDps = 0, tempC = 25.0f;int gasMv = 0, gasBase = 0;bool imuOk = false, tempOk = true, gasOk = true, simReady = false, fallArmed = false;uint32_t stillSince = 0, impactAt = 0, yellowAt = 0, nextSms = 0, lastLog = 0, lastImu = 0, lastEnv = 0, cancelUntil = 0;String reason = "";float simTemp = NAN;      // valeurs injectees par commandes serieint simGas = -1;bool simFall = false;const char* stateName(State s) { return s == NORMAL ? "NORMAL" : (s == YELLOW ? "JAUNE" : "ROUGE"); }// ===== JOURNAL HORODATE =====String ts() {  char b[48];  uint32_t t = millis();  snprintf(b, sizeof b, "[T+%06lu.%03lu]", (unsigned long)(t / 1000), (unsigned long)(t % 1000));  String s = b;  if (gps.date.isValid() && gps.time.isValid() && gps.date.year() > 2020) {    snprintf(b, sizeof b, "[%04d-%02d-%02dT%02d:%02d:%02dZ]", gps.date.year(), gps.date.month(), gps.date.day(), gps.time.hour(), gps.time.minute(), gps.time.second());    s += b;  }  return s;}void logLine(const char* fmt, ...) {  char b[220];  va_list a; va_start(a, fmt); vsnprintf(b, sizeof b, fmt, a); va_end(a);  Serial.print(ts()); Serial.print(' '); Serial.println(b);}// ===== SORTIES : LED RGB + BUZZER =====void setLed(bool r, bool g, bool b) {  digitalWrite(PIN_LED_R, (r ? 1 : 0) ^ (LED_ACTIVE_HIGH ? 0 : 1));  digitalWrite(PIN_LED_G, (g ? 1 : 0) ^ (LED_ACTIVE_HIGH ? 0 : 1));  digitalWrite(PIN_LED_B, (b ? 1 : 0) ^ (LED_ACTIVE_HIGH ? 0 : 1));}void updateOutputs() {  uint32_t t = millis();  bool buz = false;  if (state == NORMAL) {    setLed(false, true, false);  } else if (state == YELLOW) {    bool on = ((t / 500) % 2) == 0;    setLed(on, on, false);    buz = (t % 1000) < 150;  } else {    bool on = ((t / 250) % 2) == 0;    setLed(on, false, false);    buz = on;  }  digitalWrite(PIN_BUZZER, buz);}void feedGps() { while (gpsSerial.available()) gps.encode(gpsSerial.read()); }// ===== CAPTEURS =====bool imuInit() {  Wire.begin(PIN_SDA, PIN_SCL);  Wire.setClock(100000);  Wire.beginTransmission(0x68); Wire.write(0x6B); Wire.write(0x00);  if (Wire.endTransmission() != 0) return false;  Wire.beginTransmission(0x68); Wire.write(0x1C); Wire.write(0x10); Wire.endTransmission();   // +-8 g  Wire.beginTransmission(0x68); Wire.write(0x1B); Wire.write(0x00); Wire.endTransmission();   // +-250 dps  return true;}bool imuRead() {  Wire.beginTransmission(0x68); Wire.write(0x3B);  if (Wire.endTransmission(false) != 0) return false;  if (Wire.requestFrom((uint8_t)0x68, (uint8_t)14) != 14) return false;  int16_t r[7];  for (int i = 0; i < 7; i++) { uint8_t h = Wire.read(); uint8_t l = Wire.read(); r[i] = (int16_t)((h << 8) | l); }  ax = r[0] / 4096.0f; ay = r[1] / 4096.0f; az = r[2] / 4096.0f;  gx = r[4] / 131.0f;  gy = r[5] / 131.0f;  gz = r[6] / 131.0f;  accG = sqrtf(ax * ax + ay * ay + az * az);  gyroDps = sqrtf(gx * gx + gy * gy + gz * gz);  return true;}int readMv(int pin) {  uint32_t s = 0;  for (int i = 0; i < 32; i++) { s += analogReadMilliVolts(pin); delayMicroseconds(200); }  return (int)(s / 32);}void readSensors() {  uint32_t now = millis();  if (now - lastImu >= 20) {            // 50 Hz    lastImu = now;    imuOk = imuRead();    if (imuOk) {      if (simFall) { accG = 3.2f; simFall = false; }      bool still = gyroDps < STILL_GYRO_DPS && fabsf(accG - 1.0f) < STILL_G_BAND;      if (!still) stillSince = now;      if (accG > IMPACT_G) { impactAt = now; fallArmed = true; stillSince = now; logLine("IMPACT %.2f g", accG); }    } else {      stillSince = now;                 // capteur absent : pas de fausse alerte d'immobilite    }  }  if (now - lastEnv >= 500) {           // 2 Hz    lastEnv = now;    tempC = isnan(simTemp) ? readMv(PIN_LM35) / 10.0f : simTemp;    gasMv = (simGas >= 0) ? simGas : readMv(PIN_MQ2);    tempOk = (tempC >= 0 && tempC <= 120);    gasOk = (gasMv > 20 && gasMv < 3200);  }}// ===== SIM800L =====String simRead(uint32_t ms, const char* expect) {  String r;  uint32_t t0 = millis();  while (millis() - t0 < ms) {    while (simSerial.available()) r += (char)simSerial.read();    if (expect != nullptr && r.indexOf(expect) >= 0) break;    updateOutputs(); feedGps(); delay(5);  }  return r;}bool simCmd(const char* cmd, const char* expect, uint32_t ms) {  while (simSerial.available()) simSerial.read();  simSerial.println(cmd);  String r = simRead(ms, expect);  bool ok = r.indexOf(expect) >= 0;  logLine("SIM %s -> %s", cmd, ok ? "OK" : "ECHEC");  return ok;}bool simInit() {  simSerial.begin(9600, SERIAL_8N1, PIN_SIM_RX, PIN_SIM_TX);  pinMode(PIN_SIM_RST, OUTPUT); digitalWrite(PIN_SIM_RST, HIGH);  bool alive = false;  for (int i = 0; i < 5 && !alive; i++) alive = simCmd("AT", "OK", 1000);  if (!alive) { logLine("SIM800L ABSENT (alimentation / cablage, voir Phase 2)"); return false; }  simCmd("ATE0", "OK", 1000);  simCmd("AT+CMGF=1", "OK", 1000);  bool reg = false;  for (int i = 0; i < 15 && !reg; i++) {    while (simSerial.available()) simSerial.read();    simSerial.println("AT+CREG?");    String r = simRead(1000, "OK");    reg = (r.indexOf(",1") >= 0 || r.indexOf(",5") >= 0);    if (!reg) delay(1000);  }  logLine("SIM reseau %s", reg ? "ENREGISTRE" : "NON ENREGISTRE");  return reg;}bool sendSms(const char* num, const String& msg) {  while (simSerial.available()) simSerial.read();  simSerial.print("AT+CMGS="); simSerial.print('"'); simSerial.print(num); simSerial.println('"');  String r = simRead(5000, ">");  if (r.indexOf('>') < 0) { logLine("SMS %s : pas d'invite '>'", num); simSerial.write(27); return false; }  simSerial.print(msg);  simSerial.write(26);  r = simRead(30000, "+CMGS:");  bool ok = r.indexOf("+CMGS:") >= 0;  logLine("SMS vers %s : %s", num, ok ? "ENVOYE" : "ECHEC");  return ok;}String buildMsg() {  String m = String("SENTINELBAND ALERTE ROUGE: ") + reason;  if (gps.location.isValid()) m += String(" Pos: https://maps.google.com/?q=") + String(gps.location.lat(), 6) + "," + String(gps.location.lng(), 6);  else m += " Pos: GPS sans fix";  m += String(" T=") + String(tempC, 1) + "C Gaz+" + String(gasMv - gasBase) + "mV";  return m;}bool sendAlert() {  String m = buildMsg();  logLine("ALERTE ROUGE -> %s", m.c_str());  if (!simReady) simReady = simInit();  if (!simReady) { logLine("Envoi impossible : SIM800L indisponible, nouvel essai dans 10 s"); return false; }  bool a = sendSms(PHONE_COLLEAGUE, m);  bool b = sendSms(PHONE_SUPERVISOR, m);  return a || b;}// ===== DECISION =====void enter(State s, const String& why) {  state = s; reason = why;  if (s == YELLOW) yellowAt = millis();  if (s == RED) nextSms = millis();  logLine("ETAT -> %s (%s)", stateName(s), why.c_str());}void cancelAlert() {  if (state == NORMAL) return;  logLine("ANNULATION confirmee (bouton ou commande c)");  state = NORMAL; cancelUntil = millis() + CANCEL_HOLDOFF_MS;  fallArmed = false; stillSince = millis();}void evaluate() {  uint32_t now = millis();  if (fallArmed && now - impactAt > FALL_WINDOW_MS) fallArmed = false;  int gd = gasOk ? gasMv - gasBase : 0;  int hy = (state == YELLOW) ? 50 : 0;          // hysteresis  float th = (state == YELLOW) ? 1.0f : 0.0f;  bool fall  = fallArmed && (now - stillSince) >= STILL_AFTER_FALL_MS;  bool immob = (now - stillSince) >= IMMOBILE_MS;  bool gasY = gd >= GAS_YELLOW_DELTA - hy, gasR = gd >= GAS_RED_DELTA;  bool tY = tempOk && tempC >= TEMP_YELLOW - th, tR = tempOk && tempC >= TEMP_RED;  bool anyY = fall || immob || gasY || tY;  const char* why = fall ? "CHUTE+IMMOBILITE" : (immob ? "IMMOBILITE" : (gasY ? "GAZ" : "TEMPERATURE"));  if (state == NORMAL) {    if (gasR || tR) enter(RED, gasR ? "GAZ_CRITIQUE" : "TEMP_CRITIQUE");    else if (now >= cancelUntil && anyY) enter(YELLOW, why);  } else if (state == YELLOW) {    if (gasR || tR) enter(RED, gasR ? "GAZ_CRITIQUE" : "TEMP_CRITIQUE");    else if (!anyY) { logLine("Situation annulee (conditions disparues)"); state = NORMAL; }    else if (now - yellowAt >= YELLOW_TIMEOUT_MS) enter(RED, String("NON_CONFIRME_") + reason);  }}void runAlerts() {  if (state == RED && (int32_t)(millis() - nextSms) >= 0) {    bool ok = sendAlert();    nextSms = millis() + (ok ? SMS_REPEAT_MS : 10000UL);  }}void checkButton() {  static uint32_t lowSince = 0;  static bool fired = false;  if (digitalRead(PIN_BTN) == LOW) {    if (!lowSince) lowSince = millis();    if (!fired && millis() - lowSince > 50) { fired = true; cancelAlert(); }  } else { lowSince = 0; fired = false; }}void checkSerial() {  while (Serial.available()) {    char c = Serial.read();    if (c == 'c') cancelAlert();    else if (c == 'f') { simFall = true; logLine("SIM: impact injecte"); }    else if (c == 't') { simTemp = 65; logLine("SIM: temperature 65 C"); }    else if (c == 'T') { simTemp = 50; logLine("SIM: temperature 50 C"); }    else if (c == 'g') { simGas = gasBase + 900; logLine("SIM: gaz +900 mV"); }    else if (c == 'G') { simGas = gasBase + 400; logLine("SIM: gaz +400 mV"); }    else if (c == 'n') { simTemp = NAN; simGas = -1; logLine("SIM: retour aux capteurs reels"); }  }}// ===== TABLEAU DE BORD (Wi-Fi AP : SentinelBand / sentinel123 -> http://192.168.4.1) =====#if ENABLE_DASHBOARDconst char PAGE[] PROGMEM = "<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>SentinelBand</title><body style='font-family:sans-serif;text-align:center'><h1>SentinelBand</h1><h2 id=s>-</h2><pre id=d></pre><script>async function u(){try{const j=await (await fetch('/data')).json();s.textContent=j.state;s.style.color={NORMAL:'green',JAUNE:'orange',ROUGE:'red'}[j.state];d.textContent=JSON.stringify(j,null,1)}catch(e){}}setInterval(u,1000);u()</script>";String kv(const char* k, const String& v, bool isStr) {  String s = String('"') + k + '"' + ':';  if (isStr) s += String('"') + v + '"'; else s += v;  return s;}void setupDash() {  WiFi.mode(WIFI_AP);  WiFi.softAP("SentinelBand", "sentinel123");  server.on("/", []() { server.send_P(200, "text/html", PAGE); });  server.on("/data", []() {    String j = "{" + kv("state", stateName(state), true) + "," + kv("reason", reason, true) + "," + kv("temp_c", String(tempC, 1), false) + "," + kv("gas_delta_mv", String(gasMv - gasBase), false) + "," + kv("acc_g", String(accG, 2), false) + "," + kv("gps_fix", gps.location.isValid() ? "true" : "false", false) + "," + kv("uptime_s", String(millis() / 1000), false) + "}";    server.send(200, "application/json", j);  });  server.begin();  logLine("Dashboard : http://%s/", WiFi.softAPIP().toString().c_str());}#endifvoid logStatus() {  logLine("%s acc=%.2fg gyr=%.0fdps T=%.1fC gaz=%dmV(+%d) gps=%s sats=%d imu=%s src=%s", stateName(state), accG, gyroDps, tempC, gasMv, gasMv - gasBase, gps.location.isValid() ? "FIX" : "NOFIX", (int)gps.satellites.value(), imuOk ? "ok" : "KO", (!isnan(simTemp) || simGas >= 0) ? "SIM" : "REEL");  if (gps.location.isValid()) logLine("   pos=%.6f,%.6f", gps.location.lat(), gps.location.lng());}void setup() {  Serial.begin(115200);  delay(500);  pinMode(PIN_LED_R, OUTPUT); pinMode(PIN_LED_G, OUTPUT); pinMode(PIN_LED_B, OUTPUT);  pinMode(PIN_BUZZER, OUTPUT); pinMode(PIN_BTN, INPUT_PULLUP);  analogSetAttenuation(ADC_11db);  analogSetPinAttenuation(PIN_LM35, ADC_6db);  gpsSerial.begin(9600, SERIAL_8N1, PIN_GPS_RX, PIN_GPS_TX);  logLine("=== SentinelBand demarrage (DEMO_MODE=%d) ===", DEMO_MODE);  imuOk = imuInit();  logLine("MPU6050 %s", imuOk ? "OK" : "ABSENT (verifier I2C, Phase 2)");  setLed(false, false, true);  logLine("Prechauffage MQ2 : %u s (LED bleue)", (unsigned)MQ2_WARMUP_S);  for (uint32_t i = 0; i < MQ2_WARMUP_S; i++) {    uint32_t t0 = millis();    while (millis() - t0 < 1000) { feedGps(); delay(5); }    if (i % 5 == 4) logLine("  MQ2 = %d mV", readMv(PIN_MQ2));  }  long s = 0;  for (int i = 0; i < 20; i++) { s += readMv(PIN_MQ2); delay(100); }  gasBase = (int)(s / 20);  logLine("Ligne de base gaz = %d mV", gasBase);  simReady = simInit();#if ENABLE_DASHBOARD  setupDash();#endif  stillSince = millis();  logLine("=== SYSTEME PRET : etat NORMAL ===");}void loop() {  feedGps();  readSensors();  checkButton();  checkSerial();  evaluate();  runAlerts();  updateOutputs();#if ENABLE_DASHBOARD  server.handleClient();#endif  if (millis() - lastLog >= LOG_MS) { lastLog = millis(); logStatus(); }}
+Notes : l'envoi d'un SMS dure 5 à 30 s ; pendant ce temps LED et buzzer restent animés, mais la détection est suspendue (acceptable car l'état est déjà ROUGE). Le Wi-Fi et le SIM800L sont sur des alimentations séparées pour éviter les redémarrages (brownout).
+Porte de sortie : le journal affiche une ligne par seconde, sans redémarrage, avec imu=ok.
+Phase 5 — Validation et preuves
+5.1 Scénarios de test
+#
+Action
+Résultat attendu dans le journal
+Sorties
+S1
+Laisser tourner 60 s
+1 ligne/s, état NORMAL, valeurs du tableau « plausibles »
+LED verte
+S2
+Envoyer f (ou chute douce du boîtier puis immobile)
+IMPACT, puis ETAT -> JAUNE (CHUTE+IMMOBILITE) après 5 s d'immobilité
+LED jaune + bips
+S3
+Bouger le boîtier pendant le jaune
+Situation annulee (conditions disparues)
+retour vert
+S4
+Jaune puis ne rien faire 15 s
+ETAT -> ROUGE (NON_CONFIRME_...), SMS ... ENVOYE ×2
+LED rouge + buzzer
+S5
+Jaune puis bouton (ou c)
+ANNULATION confirmee
+retour vert
+S6
+G
+ETAT -> JAUNE (GAZ) puis ROUGE après 15 s
+S7
+g ou gaz de briquet non allumé près du MQ2
+ETAT -> ROUGE (GAZ_CRITIQUE) + SMS
+S8
+T puis t
+JAUNE (TEMPERATURE) puis ROUGE (TEMP_CRITIQUE)
+S9
+n puis c
+SIM: retour aux capteurs reels
+S10
+Débrancher le MPU6050
+imu=KO, aucune fausse alerte
+S11
+Débrancher le SIM800L pendant un ROUGE
+Envoi impossible ..., nouvel essai toutes les 10 s
+S12
+Se connecter au Wi-Fi SentinelBand (mot de passe sentinel123), ouvrir http://192.168.4.1
+l'état et les valeurs se mettent à jour chaque seconde
+Les scénarios S6 à S9 utilisent des valeurs injectées : le journal l'indique (src=SIM). Pour la preuve « capteur réel », refaire S2, S7 (gaz de briquet) et la montée en température du LM35 (doigt dessus) en src=REEL.
+5.2 Journal série horodaté (preuve)
+Option A : copier la console de l'Arduino IDE. Option B : enregistrer automatiquement avec l'heure du PC (Python, pip install pyserial, adapter le port) :
+import serial, datetimes = serial.Serial('COM5', 115200, timeout=1)with open('journal_sentinelband.txt', 'a', encoding='utf-8') as f:    while True:        l = s.readline().decode('utf-8', 'ignore').rstrip()        if l:            line = datetime.datetime.now().isoformat(timespec='milliseconds') + ' ' + l            print(line)            f.write(line + chr(10))            f.flush()
+Format des lignes (exemple de forme, pas un enregistrement réel) :
+[T+000123.456] NORMAL acc=1.01g gyr=2dps T=27.3C gaz=412mV(+8) gps=FIX sats=7 imu=ok src=REEL[T+000130.020] IMPACT 3.20 g[T+000135.040] ETAT -> JAUNE (CHUTE+IMMOBILITE)[T+000150.060] ETAT -> ROUGE (NON_CONFIRME_CHUTE+IMMOBILITE)[T+000168.900] SMS vers +216XXXXXXXX : ENVOYE
+5.3 Check-list du livrable
+Schéma de câblage et photo du montage (phase 1).
+Captures : scanner I2C (0x68), passerelle UART (NMEA, OK, +CREG) (phase 2).
+Sortie du banc de test pour les 6 modules (phase 3).
+Journal de S1 à S12, avec au moins S2, S4, S7 et une capture du SMS reçu (phase 5).
+Capture du tableau de bord et vidéo courte LED + buzzer.
+5.4 Dépannage rapide (ordre du protocole)
+Symptôme
+Cause probable
+Action
+ESP32 redémarre en boucle
+SIM800L sur l'alimentation ESP32, Wi-Fi + pic de courant
+Alimentation dédiée + 1000 µF (phase 1)
+MPU6050 ABSENT
+SDA/SCL inversés, pas de 3V3, soudure
+Scanner I2C ; continuité
+imu=KO intermittent
+fil long ou mauvais contact
+raccourcir, souder
+GPS : octets=0
+TX/RX non croisés
+inverser
+GPS : octets mais fix=non
+intérieur
+sortir à ciel ouvert, attendre 2 min
+SIM : aucune réponse
+alimentation < 3,8 V, RX sans diviseur
+mesurer VCC pendant l'enregistrement
+SIM : +CREG: 0,2 ou 0,0
+recherche réseau, antenne, pas de 2G
+antenne, SIM avec crédit, couverture GSM
+SMS ... pas d'invite
+mode texte non activé ou SIM verrouillée
+AT+CMGF=1, désactiver le PIN
+LM35 affiche > 100 °C ou 0
+Vout/GND inversés, LM35 alimenté en 3,3 V
+vérifier l'ordre des broches, alimenter en 5 V
+MQ2 saturé (> 3200 mV)
+pas de diviseur, préchauffage insuffisant
+diviseur 10 kΩ / 20 kΩ, attendre le préchauffage
+LED : couleurs inversées
+anode commune
+LED_ACTIVE_HIGH 0
+Fausses alertes jaunes
+seuils trop bas, bruit
+augmenter IMMOBILE_MS, GAS_YELLOW_DELTA, recalibrer la ligne de base
+
+
+
+=================== PDF: C:\Users\admab\OneDrive\Bureau\5SLEAM1\Wearable Technologies\Fiche module (1).pdf ===================
+Num pages: 9
+
+--- Page 1 ---
+ 
+ 
+ 
+Module : Wearable technologies 
+ 
+ 
+Dernière mise à jour : 16/03/2025 
+ 
+Code Cours intégré HNE ECTS 
+EMB-001 21h 55h 3 
+ 
+Responsable Module  Ameni MERSANI 
+Enseignants – Intervenants  Ameni MERSANI 
+Unité pédagogique   UP embarqué 
+Unité d’enseignement  Environnements logiciels pour dispositifs mobiles : des smart phones aux wearable computers 
+Prérequis   Bus de communication, Réseau de communication 
+Niveaux et Options  5ème année SLEAM 
+Objectif du module : 
+L’objectif de ce cours est de familiariser les étudiants avec le système portable, de leur utilisation dans des 
+applications portables, de faire la conception et réalisation d’une antenne portable  et de défendre la 
+pertinence de leurs choix. 
+Mode d’évaluation :  
+La moyenne de ce module est calculée comme suit :  
+• 100% projet (selon une grille critériée) 
+ 
+Acquis d’apprentissage :  
+A la validation de ce module l’étudiant sera capable de :  
+ Acquis d’apprentissage 
+Niveau 
+d’approfondissement (*) 
+AA1 Définir la technologie portable 1 
+AA2 Reconnaître les composants clés de la technologie portable 2 
+AA3 
+Reconnaître les principaux défis auxquels sont confrontés 
+les wearables en termes d'adoption 
+2 
+AA4 Classer les technologies XR, AR, VR et MR  3 
+AA5 Définir les capteurs portables 1 
+--- Page 2 ---
+ 
+ 
+AA6 
+Identifier la méthode d’envoi de l’information sans fils 
+Identifier la communication radio fréquence  
+1 
+AA4 Analyser une description textuelle et la traduire en un 
+produit technologique 
+2 
+AA5 Sélectionner les matériaux textiles écologiques pour 
+substituer les matériaux rigides 
+4 
+AA6 Etudier les contraintes éthiques, d’environnement et de 
+santé d’un système portable 
+4 
+AA7 Tester une antenne  5 
+AA8 Concevoir une antenne textile  6 
+AA9 Concevoir un prototype complet d’un dispositif portable 6 
+AA10 
+ 
+Défendre les résultats de son travail 4 
+ 
+* : (1 : Mémoriser, 2 : Comprendre, 3 : Appliquer, 4 : Analyser, 5 : évaluer, 6 : Créer). 
+ 
+Contenu détaillé 
+Séance 1 
+Chapitre 1. Les technologies portables « wearable » 
+• Définir la technologie portable (Wearable) 
+• Lister les exemples des technologies portables : smart-Watch, basket connectée, gilet intelligent, etc.  
+• Collecter les applications : militaires, sportives, médicales, … 
+• Définir les technologies XR 
+• Lister ces types : AR, VR, MR 
+• Identifier les avantages et les inconvénients de chacune de ces technologies  
+• Citer la liste des projets : constitution des groupes, choix de problématique, brainstorming orienté IA  
+ Situation d’apprentissage  Cours intégré 
+Durée 3h 
+Rendu Brainstorming 
+ 
+Séance 2 
+Chapitre 2 : Capteurs & Intelligence Artificielle dans les Wearables 
+• Définir les capteurs portables 
+• Lister les capteurs internes et externes  
+• Introduction de l’IA : utilisation de capteurs pour l’analyse intelligente (ex : reconnaissance d’activité, détection 
+anomalies). 
+Situation d’apprentissage  Cours intégré 
+Durée 3h 
+Rendu Architecture fonctionnelle du 
+projet, Quiz 
+--- Page 3 ---
+ 
+ 
+ 
+ 
+Séance 3 
+Chapitre 3 : Environnement radio & transmission sans fil 
+• Définir les bandes des fréquences 
+• Lister les caractéristiques  
+• Identifier les technologies 
+• Présenter des exemples des applications portables utilisant la radiofréquence   
+• Considérations IA : sélection adaptative de protocoles selon contexte (edge AI).  
+Situation d’apprentissage  Cours intégré 
+Durée 3h 
+Rendu Schéma d'architecture 
+réseau/communication+ Quiz 
+ 
+Séance 4 
+Chapitre 4 : Antennes classiques vs antennes textiles 
+• Définir les antennes Conventionnelles 
+• Lister les Caractéristiques et types d'antennes. 
+• Lister la différence entre antennes rigides et textiles. 
+• TP : simulation ou étude de cas d’une antenne textile existante. 
+• Projet : début du design d’antenne adapté au projet. 
+Situation d’apprentissage  Cours intégré 
+Durée 3h 
+Rendu TP 
+ 
+Séance 5 
+1. Conception d’une antenne textile portable personnalisée 
+• Définir les antennes textiles 
+o Décrire les caractéristiques 
+o Identifier la portée 
+o Identifier comment choisir les substrats textiles & les substrats électro-textiles 
+• Concevoir une antenne dans la bande ISM (2.45GHz). 
+• Calculer la bande passante. 
+• Identifier le coefficient de réflexion, gain et directivité. 
+• Tester la performance de l’antenne. 
+Situation d’apprentissage  Workshop 
+Durée 3h 
+Rendu première version du design 
+d’antenne. 
+ 
+ 
+ 
+--- Page 4 ---
+ 
+ 
+ 
+Séance 6 
+Prototypage & intégration IA + textile 
+• Citer les étapes d’intégration matérielle et logicielle. 
+• Montrer la démonstration ou mini-prototype virtuel. 
+• TP + Atelier : mise en œuvre de l’IA (ex : modèle ML simple intégré à l’appareil).  
+ 
+Situation d’apprentissage  Projet 
+Durée 3h 
+Rendu Mini-demo ou preuve de concept. 
+ 
+ 
+Séance 7 
+Soutenance & validation finale 
+• Etudier les outils nécessaires pour présenter et défendre une idée ou un concept  
+• Présenter le travail élaboré d’une façon pertinente et convaincante. 
+ 
+Situation d’apprentissage  Soutenance 
+Durée 3h 
+Rendu Rapport + soutenance orale  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- Page 5 ---
+ 
+ 
+ 
+Evaluation :  
+Méthodes d’évaluation :    L’étudiant est évalué selon le tableau ci-dessous. Toutes les évaluations seront selon une grille d’évaluation 
+critériée. 
+Acquis d’apprentissage 
+Méthode d’évaluation Séance  
+Définir la technologie portable Présentation + Soutenance Séance 1+5+7 
+Reconnaître les composants clés de la technologie portable Présentation + soutenance Séance 1+5+7 
+Reconnaître les principaux défis auxquels sont confrontés les 
+wearables en termes d'adoption 
+Présentation + soutenance Séance 1+7 
+Classer les technologies XR, AR, VR et MR  
+Quiz +soutenance  Séance 
+1+5+7 
+Définir les capteurs Quiz + soutenance Séance 3+4 
+Identifier la méthode d’envoi de l’information sans fils 
+Identifier la communication radio fréquence  
+ 
+TP + soutenance Séance 1+7 
+Analyser une description textuelle et la traduire en un produit 
+technologique 
+TP Séance 2+3 
++4+6 
+Sélectionner les matériaux textiles écologiques pour 
+substituer les matériaux rigides 
+TP + workshop Séance 3 
++4+6 
+Etudier les contraintes éthiques, d’environnement et de santé 
+d’un système portable 
+Soutenance Séance 7 
+Tester une antenne  TP  Séance 5 
+Concevoir une antenne textile  TP + soutenance Séance 5+6 
+Défendre les résultats de son travail Soutenance Séance 7 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- Page 6 ---
+ 
+ 
+Grille d’évaluation 
+ A (5pts) B (4pts) C (2pts) D (1pt) 
+Contenu scientifique 
+Définir l a 
+technologie 
+portable 
+L’étudiant est capable 
+de définir une 
+technologie portable 
+L'étudiant peut 
+énumérer la 
+majorité des faits 
+L'étudiant peut 
+identifier vaguement 
+la technologie 
+portable autant 
+comprendre sa notion 
+L’étudiant n’est 
+pas capable de 
+définir la 
+technologie 
+portable 
+Reconnaître 
+l’architecture de 
+cette technologie 
+Toutes les parties de 
+l’architecture sont 
+identifiées et 
+présentées  
+L'étudiant peut 
+énumérer la 
+majorité des blocs 
+constituant 
+l’architecture   
+L'étudiant peut 
+énumérer vaguement 
+les blocs constituant 
+l’architecture 
+Toutes les parties 
+de l’architecture  
+ne sont pas 
+identifiées et 
+présentées  
+Classer les systèmes 
+portables  
+L’étudiant peut 
+classer les systèmes 
+portables selon leurs 
+types 
+L’étudiant est 
+capable d’identifier 
+et classer la 
+majorité des 
+systèmes portables 
+L’étudiant est capable 
+d’identifier et classer 
+quelques systèmes 
+portables 
+*L’étudiant n’est 
+pas capable 
+d’identifier et 
+classer les 
+systèmes 
+portables 
+Analyser une 
+description 
+textuelle et la 
+traduire en un 
+produit 
+technologique 
+L’étudiant peut 
+analyser une 
+description textuelle 
+et la traduire en un 
+produit 
+technologique 
+L’étudiant peut 
+analyser une 
+description 
+textuelle et ne peut 
+pas la traduire en un 
+produit 
+technologique 
+L’étudiant ne peut pas 
+analyser une 
+description textuelle 
+et peut la traduire en 
+un produit 
+technologique 
+L’étudiant ne peut 
+pas analyser une 
+description 
+textuelle et ne peut 
+pas la traduire en 
+un produit 
+technologique 
+Sélectionner les 
+matériaux textiles 
+écologiques pour 
+substituer les 
+matériaux rigides 
+L’étudiant est capable 
+de mettre en place 
+des solutions 
+pertinentes  
+Les solutions 
+proposées 
+manquent de 
+pertinence 
+Les solutions 
+proposées ne sont pas 
+adaptées à la 
+problématique 
+L’étudiant n’a pas 
+proposé de 
+solution 
+Etudier les 
+contraintes 
+éthiques, 
+d’environnement et 
+de santé d’un 
+système portable 
+L'étudiant est capable 
+d'identifier en 
+fonction de ses 
+connaissances les 
+faits impactant 
+l'environnement et 
+peut expliquer leur 
+effet. 
+L'étudiant peut 
+énumérer la 
+majorité des faits 
+qui impactent 
+l'environnement, il 
+en explique 
+quelques-uns 
+L'étudiant peut 
+identifier vaguement 
+les faits sans pour 
+autant comprendre 
+leur impact 
+L'étudiant ignore 
+comment un projet 
+a un impact sur 
+l'environnement. 
+Classer les 
+technologies XR, AR, 
+VR et MR  
+L’étudiant peut  
+classer les 
+technologies XR, AR, 
+VR et MR 
+L'étudiant peut 
+énumérer la 
+majorité des faits 
+L'étudiant peut 
+identifier vaguement 
+les technologies XR, 
+AR, VR et MR 
+L’étudiant n’est 
+pas capable de 
+définir la 
+technologie 
+portable 
+--- Page 7 ---
+ 
+ 
+Définir les capteurs 
+L’étudiant capable de 
+définir un capteur et 
+lister ses types 
+L’étudiant capable 
+de définir un 
+capteur et lister un 
+de ses types 
+L’étudiant capable de 
+définir un capteur et 
+ne peut pas lister ses 
+types 
+L’étudiant n’est 
+pas capable de 
+définir un capteur 
+et ne peut pas 
+lister ses types 
+Identifier la 
+communication 
+radio fréquence  
+ 
+L’étudiant capable 
+d’identifier la 
+méthode d’envoi de 
+l’information sans 
+fils 
+ 
+L’étudiant capable 
+d’identifier la 
+méthode d’envoi de 
+l’information sans 
+fils sans bien 
+comprendre le 
+principe 
+ 
+L’étudiant peut 
+identifier vaguement 
+la méthode d’envoi 
+de l’information sans 
+fils 
+ 
+L’étudiant n’est 
+pas capable 
+d’identifier la 
+méthode d’envoi 
+de l’information 
+sans fils 
+ 
+Tester une antenne  
+L’étudiant est capable 
+de tester une antenne 
+et relever toutes ses 
+caractéristiques 
+L’étudiant est 
+capable de tester 
+une antenne et 
+relever la majorité 
+de ses 
+caractéristiques 
+L’étudiant est capable 
+de tester une antenne 
+et n’est pas capable de 
+relever toutes ses 
+caractéristiques 
+L’étudiant n’est 
+pas capable de 
+tester une antenne 
+et de relever toutes 
+ses 
+caractéristiques 
+Concevoir une 
+antenne textile  
+L’étudiant est capable 
+de concevoir une 
+antenne et de la 
+fabriquer 
+L’étudiant est 
+capable de 
+concevoir une 
+antenne et n’est pas 
+capable de la 
+fabriquer 
+L’étudiant n’est pas  
+capable de concevoir 
+une antenne et 
+capable de la 
+fabriquer 
+L’étudiant n’est 
+pas capable de 
+concevoir une 
+antenne et de la 
+fabriquer 
+Agir en équipe d’une 
+façon coopérative et 
+productive. 
+*L’étudiant contribue 
+dans les différentes 
+phases du projet  
+*Il fait preuve d’esprit 
+d’équipe et défend le 
+travail de ses 
+camarades  
+*L’étudiant 
+contribue dans la 
+majorité des phases 
+du projet *Il défend 
+le travail de ses 
+camarades 
+*L’étudiant contribue 
+dans quelques phases 
+du projet  
+*Il répond aux 
+questions en se 
+basant uniquement 
+sur sa partie  
+L’étudiant ne 
+contribue pas dans 
+les différentes 
+phases du projet  
+*Il est passif et ne 
+fait pas preuve 
+d’esprit d’équipe 
+Présentation du travail 
+Maîtrise du sujet  
+L’étudiant maitrise la 
+problématique 
+abordée et les 
+solutions proposées   
+L’étudiant maitrise 
+majoritairement la 
+problématique 
+abordée et les 
+solutions proposées 
+L’étudiant maitrise 
+partiellement la 
+problématique 
+abordée et les 
+solutions proposées 
+L’étudiant ne 
+maitrise pas la 
+problématique 
+abordée et les 
+solutions 
+proposées 
+Elaborer les outils 
+nécessaires pour 
+présenter et 
+défendre une idée 
+ou un concept 
+*Les outils 
+synthétisent 
+parfaitement le 
+travail demandé  
+*Les outils 
+synthétisent 
+majoritairement  le 
+travail demandé 
+*Les outils 
+synthétisent 
+partiellement le 
+travail demandé  
+*Les outils ne 
+synthétisent pas le 
+travail demandé  
+*Les rendus 
+élaborés  
+--- Page 8 ---
+ 
+ 
+*La langue de 
+rédaction est 
+correcte.  
+*Les fautes de 
+langue sont rares. 
+*Les rendus élaborés  
+contiennent quelques 
+fautes 
+contiennent 
+plusieurs fautes 
+Qualité de la 
+présentation orale 
+et de 
+l’argumentation  
+L’étudiant maîtrise le 
+sujet  
+L’étudiant répond aux 
+questions d’une façon 
+pertinente  
+L’étudiant justifie  
+défend ses choix. 
+Malgré un manque 
+d’aisance et/ou 
+quelques 
+maladresses dans la 
+forme l’oral 
+représente le 
+travail.  
+L’étudiant maîtrise 
+globalement le sujet  
+Les réponses aux 
+questions manquent 
+de pertinence    
+Attitude inappropriée 
+pendant la 
+soutenance. 
+L’étudiant maîtrise 
+partiellement le sujet  
+L’étudiant répond 
+partiellement aux 
+questions posées 
+Le propos n’est pas 
+compréhensible.  
+L’étudiant ne 
+maîtrise pas le 
+sujet  
+L’étudiant ne 
+répond pas aux 
+questions   
+ 
+Annexe : Grille d’évaluation  (faite à l’issue de la 8ème séance) 
+Validation à l’issue de la 8ème séance 
+Contenu 
+scientifique  
+Contenu bien adapté 
+à la problématique 
+posée, les recherches 
+sont pertinentes 
+Contenu 
+globalement adapté 
+à la problématique 
+posée 
+Contenu 
+partiellement adapté 
+à la problématique 
+posée 
+*Contenu 
+inexistant ou 
+recherches 
+vagues.   
+Qualité de la 
+présentation 
+Les outils choisis sont 
+parfaitement 
+adéquats au contenu 
+présenté.  
+Les outils choisis 
+sont 
+majoritairement 
+adéquats au 
+contenu présenté. 
+Les outils choisis sont 
+partiellement 
+adéquats au contenu 
+présenté. 
+Les outils 
+choisis  ne sont 
+pas adéquats au 
+contenu 
+présenté. 
+ 
+ 
+Références:  
+Classroom Modèle : https://classroom.google.com/w/NDA2NjE1ODE1MTEy/t/all  
+Références 
+bibliographiques :  
+[1] Jean-Marc Ribero, Ameni Mersani, Lotfi Osman. Conception d'une antenne 
+textile double bande pour des applications de communication sans fil. 20èmes 
+Journées Nationales Microondes, May 2017, Saint-Malo, France. pp.4. ⟨hal-
+01662328⟩ 
+[2] Sabban, Albert. "Wideband Wearable Antennas for 5G, IoT, and Medical 
+Applications" In Advanced Radio Frequency Antennas for Modern 
+Communication and Medical Systems, edited by Albert Sabban. London: 
+IntechOpen, 2020. 10.5772/intechopen.93492 
+[3] Wearable Technology in Healthcare, Reference Code: GDHCHT026 
+Published: August 2019, GlobalData 
+--- Page 9 ---
+ 
+ 
+[4] https://leepaton.com.au/digital-fixation/the-latest-trends-in-wearable-
+technology/ 
+[5] https://www.smartringnews.com/posts/what-are-smart-rings-how-do-
+they-work  
+[6] https://www.ray-ban.com/usa/ray-ban-stories 
+[7] https://www.levi.com/US/en_US/blog/article/levis-trucker-jacket-with-
+jacquard-by-google 
+[8] https://www.theinformation.com/articles/apple-eyes-2022-release-for-ar-
+headset-2023-for-glasses 
+ 
+ 
+ 
+ 
+ 
+
+
+=================== PDF: C:\Users\admab\OneDrive\Bureau\5SLEAM1\Wearable Technologies\Objectifs_du_cours_«_Capteurs_portables_»_appliqués_au_projet_SentinelBand.pdf ===================
+Num pages: 9
+
+--- Page 1 ---
+Objectifs  du  cours  « Capteurs  portables  » 
+appliqu é s  au  projet  SentinelBand
+1. Finalité du cours pour notre projet
+Le cours sur les capteurs portables a pour objectif d’aider l’équipe à transformer l’idée 
+générale de SentinelBand en une architecture de mesure ﬁable et justiﬁée.
+Pour notre projet, il ne suﬃt pas d’ajouter plusieurs capteurs au bracelet et au module de 
+ceinture. Il faut démontrer que chaque capteur mesure une grandeur utile, que son 
+emplacement est adapté, que les données sont correctement traitées et que la décision 
+d’alerte repose sur des indicateurs mesurables.
+La chaîne complète à construire est la suivante :
+2. Objectifs pédagogiques généraux du cours
+À la ﬁn de la séance, notre équipe doit être capable de :
+1. Déﬁnir le rôle d’un capteur portable. Un capteur convertit une grandeur physique, 
+chimique ou biologique en un signal exploitable par un système électronique.
+2. Distinguer les notions de grandeur, signal, donnée et information. Par exemple, le 
+mouvement du travailleur est une grandeur observée par le MPU6050 ; après 
+échantillonnage et traitement, il devient une information permettant d’estimer une 
+chute.
+3. Choisir les capteurs en fonction du besoin réel, et non en fonction de la technologie 
+disponible ou de sa popularité.
+4. Justiﬁer le placement des capteurs selon la précision recherchée, le confort et les 
+risques d’erreur.
+5. Identiﬁer les bruits, dérives et artefacts qui peuvent rendre une mesure trompeuse.
+6. Construire une chaîne complète capteur‒décision, comprenant acquisition, ﬁltrage, 
+extraction de caractéristiques, interprétation et action.
+7. Justiﬁer les compromis mesurables entre précision, autonomie, confort, coût, 
+conﬁdentialité et rapidité de réaction.
+3. Objectifs spéciﬁques à appliquer à SentinelBand
+Situation réelle du travailleur → capteur → signal → donnée numérique → 
+information interprétée → décision ou alerte
+--- Page 2 ---
+Objectif 1 — Relier chaque mesure à un besoin de sécurité
+L’équipe doit déﬁnir précisément ce que chaque capteur apporte à la sécurité du 
+travailleur isolé.
+Résultat attendu : aucune mesure ne doit rester sans fonction clairement déﬁnie dans la 
+décision de sécurité.
+Objectif 2 — Justiﬁer le placement des capteurs
+L’équipe doit expliquer pourquoi le MAX30102 est placé au poignet et pourquoi le 
+MPU6050 ainsi que le GPS sont placés dans le module à la ceinture.
+Le bracelet est placé au poignet, car cette zone est adaptée à la mesure optique de la 
+fréquence cardiaque. Toutefois, le mouvement du poignet, le mauvais contact avec la peau, 
+la transpiration et la lumière peuvent perturber la mesure.
+Le MPU6050 est placé près de la taille, car cette zone est proche du centre de masse du 
+corps. Elle est donc plus pertinente pour analyser une chute et l’immobilité générale du 
+Besoin de 
+SentinelBand
+Grandeur observée Capteur prévu Information 
+recherchée
+Détecter une chute Accélération et 
+orientation du corps MPU6050
+Chute probable, 
+changement brutal 
+d’orientation et 
+immobilité 
+consécutive
+Détecter une 
+immobilité anormale
+Mouvement du corps 
+sur une durée donnée MPU6050
+Absence de 
+mouvement après un 
+événement ou 
+pendant une situation 
+suspecte
+Détecter une 
+anomalie cardiaque
+Variations optiques du 
+volume sanguin MAX30102
+Fréquence cardiaque 
+anormale ou évolution 
+inhabituelle du rythme
+Localiser le travailleur Position géographique NEO-6M GPS
+Coordonnées GPS à 
+transmettre avec 
+l’alerte
+Transmettre les 
+mesures
+Signal de 
+communication sans ﬁl BLE / RF à préciser
+Données du bracelet 
+vers le module de 
+ceinture
+--- Page 3 ---
+travailleur qu’un capteur placé sur un outil ou sur un membre très mobile.
+Le GPS est intégré au module de ceinture aﬁn de centraliser la position avec les autres 
+données d’urgence. L’équipe devra toutefois vériﬁer la qualité du signal GPS selon la 
+position du module et l’environnement de travail.
+Résultat attendu : le placement doit être argumenté selon la précision, le confort, la 
+robustesse et les contraintes de travail.
+Objectif 3 — Transformer les données brutes en informations utiles
+Les données brutes ne doivent pas déclencher directement une alerte. SentinelBand doit 
+utiliser une chaîne de traitement organisée :
+1. Acquisition : lecture des capteurs et horodatage des mesures.
+2. Prétraitement : ﬁltrage du bruit, calibration et contrôle de la qualité du signal.
+3. Extraction de caractéristiques : pic d’accélération, changement d’orientation, 
+durée d’immobilité et évolution de la fréquence cardiaque.
+4. Interprétation : application de règles, d’un seuil ou d’un score de conﬁance.
+5. Action : situation normale, alerte jaune ou alerte rouge.
+Pour une chute, l’équipe doit privilégier la combinaison suivante :
+Une simple règle du type « accélération supérieure à un seuil » serait insuﬃsante, car elle 
+pourrait confondre une chute avec le fait de poser brutalement le module sur une table, un 
+choc d’outil ou un mouvement professionnel normal.
+Objectif 4 — Réduire les faux positifs et les faux négatifs
+Le projet doit identiﬁer les situations susceptibles de provoquer une mauvaise décision.
+Les principaux risques sont :
+• un bracelet mal positionné ou trop lâche ;
+• les mouvements rapides du poignet qui perturbent le PPG ;
+• la transpiration et la lumière qui perturbent la mesure optique ;
+• un choc ou une vibration interprété comme une chute ;
+• une immobilité normale interprétée comme un malaise ;
+• une fréquence cardiaque élevée liée à un eﬀort et non à un danger ;
+• une perte de signal GPS ou de communication ;
+• une mauvaise couverture réseau empêchant la transmission de l’alerte.
+Pic d’accélération + changement d’orientation + immobilité après l’événement
+--- Page 4 ---
+Les solutions à étudier sont le calibrage personnalisé, le contrôle du port du bracelet, le 
+recoupement de plusieurs capteurs, l’utilisation d’une alerte jaune, un délai de 
+conﬁrmation, une vibration de retour et un bouton d’annulation.
+Résultat attendu : chaque risque important doit être associé à une mesure de réduction et 
+à un indicateur de vériﬁcation.
+Objectif 5 — Concevoir la logique de décision à trois niveaux
+La logique du cours doit être appliquée aux trois états de SentinelBand :
+• Situation normale : surveillance continue sans notiﬁcation d’urgence.
+• Alerte jaune : anomalie détectée ; le travailleur peut conﬁrmer ou annuler si son état le 
+permet.
+• Alerte rouge : danger conﬁrmé ou combinaison de signaux fortement anormaux ; 
+notiﬁcation automatique des collègues proches et du centre de supervision avec la 
+position GPS.
+L’équipe doit déﬁnir les conditions précises de passage d’un état à l’autre. Elle doit 
+aussi déﬁnir le temps laissé au travailleur pour annuler l’alerte jaune et le comportement 
+du système en cas d’absence de réponse.
+Objectif 6 — Choisir le lieu de traitement des données
+Le cours distingue le traitement sur le wearable, sur un smartphone et dans le cloud. Pour 
+SentinelBand, les décisions urgentes doivent rester locales autant que possible.
+Le traitement local sur le module de ceinture est recommandé pour :
+• détecter rapidement une chute ;
+• vériﬁer l’immobilité ;
+• produire un score de conﬁance ;
+• déclencher l’alerte jaune même sans connexion permanente.
+La transmission vers un système distant peut être utilisée pour :
+• envoyer l’alerte rouge ;
+• transmettre la position GPS ;
+• conserver un historique ;
+• aﬃcher les événements au centre de supervision.
+Résultat attendu : l’architecture doit préciser quelles décisions sont prises localement et 
+quelles données sont transmises.
+--- Page 5 ---
+Objectif 7 — Préserver l’autonomie énergétique
+Le cours rappelle que l’échantillonnage, les capteurs actifs, le calcul local, la radio, 
+l’écran et la vibration consomment de l’énergie. SentinelBand doit donc déﬁnir une 
+stratégie d’économie d’énergie.
+Les solutions à étudier sont :
+• mesurer à une fréquence adaptée à chaque capteur ;
+• utiliser un mode veille lorsque la situation est normale ;
+• augmenter temporairement la fréquence d’échantillonnage après un événement 
+suspect ;
+• transmettre des caractéristiques ou des événements plutôt que les signaux bruts en 
+permanence ;
+• réserver le GPS à la localisation nécessaire ou à la procédure d’alerte ;
+• désactiver les fonctions non essentielles.
+La contrainte de conception proposée par le cours est un objectif d’autonomie de 48 
+heures. L’équipe doit vériﬁer si cet objectif est compatible avec la fréquence de mesure, 
+la radio, le GPS et la batterie choisie.
+Objectif 8 — Améliorer le confort et l’acceptabilité
+Le dispositif doit être utilisable pendant une journée de travail réelle. L’équipe doit donc 
+vériﬁer le poids, l’encombrement, la ﬁxation, le contact avec la peau, la résistance à la 
+transpiration et la facilité de recharge.
+Le bracelet ne doit pas gêner les mouvements du travailleur. Le module ne doit pas 
+perturber l’utilisation de la ceinture porte-outils. Le système doit également rester discret 
+et ne pas utiliser de caméra.
+Résultat attendu : le choix des composants et du boîtier doit être évalué autant selon le 
+confort que selon la précision technique.
+Objectif 9 — Protéger les données et respecter la responsabilité 
+numérique
+Les données cardiaques et les positions GPS sont sensibles. Le projet doit appliquer les 
+principes suivants :
+• collecter uniquement les données nécessaires à la sécurité ;
+• éviter de stocker les signaux bruts si les caractéristiques suﬃsent ;
+• informer l’utilisateur sur les données collectées et leur utilisation ;
+--- Page 6 ---
+• protéger la transmission et le stockage ;
+• limiter l’accès aux informations de santé et de localisation ;
+• déﬁnir la durée de conservation des données.
+Le système ne doit pas présenter la fréquence cardiaque comme un diagnostic médical 
+automatique. Il s’agit d’une mesure physiologique destinée à détecter une situation 
+potentiellement anormale dans un contexte donné.
+Objectif 10 — Déﬁnir des indicateurs mesurables
+Le cours demande de remplacer les objectifs généraux par des critères de réussite 
+mesurables. Pour SentinelBand, l’équipe doit au minimum suivre :
+4. Objectif du livrable demandé par le cours
+Le cours demande de produire une ﬁche « Capteurs & Décision » intégrée au dossier de 
+conception. Pour SentinelBand, cette ﬁche doit contenir :
+Indicateur Application au projet
+Temps de réponse
+Vériﬁer que le délai après une alerte rouge 
+reste inférieur à une minute, selon l’objectif 
+annoncé.
+Taux de faux positifs Mesurer les alertes déclenchées pendant des 
+activités normales.
+Taux de faux négatifs Vériﬁer les situations dangereuses non 
+détectées.
+Taux de conversion des alertes jaunes Mesurer la proportion d’alertes jaunes 
+conﬁrmées comme dangereuses.
+Autonomie Vériﬁer l’objectif de fonctionnement, 
+notamment la cible de 48 heures.
+Qualité de mesure cardiaque Mesurer la proportion de données utilisables 
+malgré le mouvement et la transpiration.
+Disponibilité de la localisation
+Mesurer la proportion d’alertes 
+accompagnées d’une position GPS 
+exploitable.
+Confort utilisateur Recueillir une évaluation du poids, de la gêne 
+et de la facilité de port.
+--- Page 7 ---
+1. Besoin ciblé : sécurité des travailleurs isolés en zone reculée ou dangereuse.
+2. Grandeurs à observer : mouvement, orientation, immobilité, fréquence cardiaque et 
+position GPS.
+3. Capteurs et placement : MPU6050 à la ceinture, MAX30102 au poignet et NEO-6M dans 
+le module de ceinture.
+4. Données brutes : unité, fréquence d’échantillonnage, durée de fenêtre et horodatage.
+5. Traitement : ﬁltrage, calibration, extraction de caractéristiques et calcul d’un score de 
+conﬁance.
+6. Décision et service : situation normale, alerte jaune, alerte rouge et transmission aux 
+destinataires.
+7. Architecture : traitement local sur le module, puis transmission vers le système distant 
+si nécessaire.
+8. Risques et indicateurs : erreurs de mesure, faux positifs, faux négatifs, autonomie, 
+conﬁdentialité et critères de réussite.
+5. Objectif du micro-pitch technique
+Le projet doit pouvoir être présenté en quatre phrases :
+1. Mesure : « Nous mesurons le mouvement, la fréquence cardiaque et la position GPS 
+aﬁn de détecter une situation dangereuse chez un travailleur isolé. »
+2. Capteur et placement : « Nous utilisons le MPU6050 dans un module placé à la 
+ceinture, le MAX30102 au poignet et le NEO-6M dans le module, car chaque 
+emplacement répond à une contrainte de mesure diﬀérente. »
+3. Décision : « Le système déclenche une alerte jaune lorsqu’une anomalie est détectée 
+et une alerte rouge lorsque le danger est conﬁrmé par l’utilisateur ou par plusieurs 
+signaux concordants. »
+4. Compromis et validation : « Nous privilégions la ﬁabilité et le traitement local, et le 
+système est réussi si le temps de réponse est inférieur à une minute, avec une 
+autonomie suﬃsante et un taux de faux positifs limité. »
+La question technique à préparer est :
+6. Plan d’application dans le projet
+Comment SentinelBand gère-t-il les artefacts, l’autonomie et la conﬁdentialité des 
+données ?
+--- Page 8 ---
+Étape 1 — Compléter la ﬁche de mesure
+L’équipe doit renseigner pour chaque capteur la grandeur mesurée, l’unité, la fréquence 
+d’échantillonnage, la fenêtre d’analyse et le rôle dans la décision.
+Étape 2 — Déﬁnir les scénarios d’essai
+Les essais doivent couvrir une chute simulée, une immobilité après chute, un mouvement 
+professionnel normal, un choc sans chute, une fréquence cardiaque élevée pendant un 
+eﬀort et une perte de communication.
+Étape 3 — Mesurer les erreurs
+Chaque scénario doit permettre d’identiﬁer les faux positifs et les faux négatifs. Les 
+résultats doivent être conservés dans un tableau pour comparer les versions de 
+l’algorithme.
+Étape 4 — Tester les compromis
+L’équipe doit comparer plusieurs réglages de fréquence de mesure, de durée de fenêtre et 
+de seuil. Pour chaque réglage, elle doit noter l’eﬀet sur la précision, l’autonomie et le 
+temps de réaction.
+Étape 5 — Valider la décision d’alerte
+La décision ﬁnale doit être validée avec la logique d’alerte jaune et rouge. Aucun 
+déclenchement critique ne doit reposer uniquement sur un signal insuﬃsamment ﬁable, 
+sauf si une situation particulièrement grave le justiﬁe.
+Étape 6 — Intégrer les résultats au dossier de conception
+La ﬁche complétée doit devenir la section « Capteurs, données et décision » du dossier de 
+projet. Elle doit être mise à jour après chaque test du prototype.
+7. Résultat attendu pour SentinelBand
+À l’issue de l’application de ce cours, l’équipe doit disposer d’une architecture de 
+mesure capable de répondre clairement aux questions suivantes :
+• Pourquoi ces capteurs sont-ils nécessaires ?
+• Que mesure exactement chaque capteur ?
+• Pourquoi est-il placé à cet endroit ?
+• Comment les données brutes sont-elles nettoyées et interprétées ?
+--- Page 9 ---
+• Comment le système distingue-t-il une situation normale d’un danger ?
+• Comment les faux positifs et les faux négatifs sont-ils réduits ?
+• Quelle décision reste locale sur le wearable ?
+• Comment l’autonomie de 48 heures est-elle prise en compte ?
+• Quelles données sont transmises et comment sont-elles protégées ?
+• Quels indicateurs prouvent que le prototype apporte réellement de la valeur ?
+Conclusion
+Le cours permet de faire évoluer SentinelBand d’une idée de bracelet de sécurité vers une 
+solution techniquement argumentée. Son application doit conduire à une meilleure 
+sélection des capteurs, à un placement plus ﬁable, à une chaîne de traitement réaliste et à 
+une logique d’alerte mesurable.
+Le résultat ﬁnal attendu n’est donc pas seulement une liste de composants. C’est une 
+architecture complète capteur‒donnée‒décision, validée par des essais, des indicateurs 
+de performance et des compromis explicitement justiﬁés.
+Référence
+[1] Séance 2 — Les capteurs portables, Wearable Technologies, ESPRIT
+Document préparé pour l’application du cours au projet SentinelBand.
+Auteur : Manus AI
+Date : 23 septembre 2026
+
+
+=================== DOCX: C:\Users\admab\OneDrive\Bureau\5SLEAM1\Wearable Technologies\Seance-2_Capteurs_portables.docx ===================
+Séance2 : Les capteurs portables
+Corps
+→⌁Capteur
+→▥ Donnée
+→✓ Décision
+11Année Universitaire 2026-2027
+1
+1
+Votre concept devient une architecture de mesure
+Le besoinUtilisateur et contexteProblème concret à résoudreLe besoinUtilisateur et contexteProblème concret à résoudreLe wearableLocalisation corporelleService et valeur attendueLe wearableLocalisation corporelleService et valeur attendueLe défi du jourQuelles données mesurer ?Comment les rendre fiables ?Le défi du jourQuelles données mesurer ?Comment les rendre fiables ?Question : quelle donnée devez-vous mesurer pour démontrer que votre solution apporte réellement de la valeur ?Question : quelle donnée devez-vous mesurer pour démontrer que votre solution apporte réellement de la valeur ?Sondage chat / Forms • 2 minSondage chat / Forms • 2 minRÉACTIVATIONRÉACTIVATIONVous avez déjà défini…
+Le besoin
+Utilisateur et contexte
+Problème concret à résoudre
+Le besoin
+Utilisateur et contexte
+Problème concret à résoudre
+Le wearable
+Localisation corporelle
+Service et valeur attendue
+Le wearable
+Localisation corporelle
+Service et valeur attendue
+Le défi du jour
+Quelles données mesurer ?
+Comment les rendre fiables ?
+Le défi du jour
+Quelles données mesurer ?
+Comment les rendre fiables ?
+Question : quelle donnée devez-vous mesurer pour démontrer que votre solution apporte réellement de la valeur ?
+Question : quelle donnée devez-vous mesurer pour démontrer que votre solution apporte réellement de la valeur ?
+Sondage chat / Forms • 2 min
+Sondage chat / Forms • 2 min
+RÉACTIVATION
+RÉACTIVATION
+À la fin de cette séance, vous saurez sélectionner et justifier des capteurs
+OBJECTIFSComprendreDéfinir un capteur portableDistinguer grandeur, signal, donnée et informationOBJECTIFSComprendreDéfinir un capteur portableDistinguer grandeur, signal, donnée et informationAnalyserChoisir selon besoin etplacementIdentifier bruit, dérive et artefactsAnalyserChoisir selon besoin etplacementIdentifier bruit, dérive et artefactsConcevoirConstruire la chaîne capteur →décisionExprimer un compromis mesurableConcevoirConstruire la chaîne capteur →décisionExprimer un compromis mesurable
+OBJECTIFS
+Comprendre
+Définir un capteur portable
+Distinguer grandeur, signal, donnée et information
+OBJECTIFS
+Comprendre
+Définir un capteur portable
+Distinguer grandeur, signal, donnée et information
+Analyser
+Choisir selon besoin et
+placement
+Identifier bruit, dérive et artefacts
+Analyser
+Choisir selon besoin et
+placement
+Identifier bruit, dérive et artefacts
+Concevoir
+Construire la chaîne capteur →
+décision
+Exprimer un compromis mesurable
+Concevoir
+Construire la chaîne capteur →
+décision
+Exprimer un compromis mesurable
+Livrable : Fiche « Capteurs s Décision » intégrée au projet de groupeLivrable : Fiche « Capteurs s Décision » intégrée au projet de groupe
+Livrable : Fiche « Capteurs s Décision » intégrée au projet de groupe
+Livrable : Fiche « Capteurs s Décision » intégrée au projet de groupe
+Que mesure-t-on vraiment ?
+VOTEVOTEVotez dans le chat : A, B ou C. Puis justifiez votre réponse
+VOTE
+VOTE
+Détecter une chuteDétecter une chuteA. Température cutanéeA. Température cutanéeB. Accélération + orientationB. Accélération + orientationC. Niveau sonoreC. Niveau sonoreSuivre l’intensité d’un effortSuivre l’intensité d’un effortA. Fréquence cardiaqueA. Fréquence cardiaqueB. Humidité ambianteB. Humidité ambianteC. GPS seulC. GPS seulÉvaluer la posture assiseÉvaluer la posture assiseA. Orientation du troncA. Orientation du troncB. SpO₂B. SpO₂C. LuminositéC. LuminositéAlerter face aux UVAlerter face aux UVA. Indice UV / lumièreA. Indice UV / lumièreB. ECGB. ECGC. Pression plantaireC. Pression plantaireQuestion de relance : une seule mesure suffit-elle toujours pour prendre une décision fiable ?Question de relance : une seule mesure suffit-elle toujours pour prendre une décision fiable ?
+Détecter une chute
+Détecter une chute
+A. Température cutanée
+A. Température cutanée
+B. Accélération + orientation
+B. Accélération + orientation
+C. Niveau sonore
+C. Niveau sonore
+Suivre l’intensité d’un effort
+Suivre l’intensité d’un effort
+A. Fréquence cardiaque
+A. Fréquence cardiaque
+B. Humidité ambiante
+B. Humidité ambiante
+C. GPS seul
+C. GPS seul
+Évaluer la posture assise
+Évaluer la posture assise
+A. Orientation du tronc
+A. Orientation du tronc
+B. SpO₂
+B. SpO₂
+C. Luminosité
+C. Luminosité
+Alerter face aux UV
+Alerter face aux UV
+A. Indice UV / lumière
+A. Indice UV / lumière
+B. ECG
+B. ECG
+C. Pression plantaire
+C. Pression plantaire
+Question de relance : une seule mesure suffit-elle toujours pour prendre une décision fiable ?
+Question de relance : une seule mesure suffit-elle toujours pour prendre une décision fiable ?
+Du phénomène réel au service rendu à l’utilisateur
+CONCEPTCONCEPTUn capteur convertit une grandeur physique, chimique ou biologique en un signal exploitable par un système électronique.
+CONCEPT
+CONCEPT
+1Grandeur réelleMouvement, lumière, pression…1Grandeur réelleMouvement, lumière, pression…→3Signal électriqueTension, courant, impulsions→3Signal électriqueTension, courant, impulsions→4Donnée numériqueÉchantillons horodatés→4Donnée numériqueÉchantillons horodatés→5Information / actionAlerte, suivi, conseil→5Information / actionAlerte, suivi, conseil2
+1
+Grandeur réelle
+Mouvement, lumière, pression…
+1
+Grandeur réelle
+Mouvement, lumière, pression…
+→
+3
+Signal électrique
+Tension, courant, impulsions
+→
+3
+Signal électrique
+Tension, courant, impulsions
+→
+4
+Donnée numérique
+Échantillons horodatés
+→
+4
+Donnée numérique
+Échantillons horodatés
+→
+5
+Information / action
+Alerte, suivi, conseil
+→
+5
+Information / action
+Alerte, suivi, conseil
+→Capteur
+Transduction
+Exemple : courseMouvement du poignet → accéléromètre → signal sur 3 axes → filtrage → détection de pas → estimation de cadence.Exemple : courseMouvement du poignet → accéléromètre → signal sur 3 axes → filtrage → détection de pas → estimation de cadence.
+Exemple : course
+Mouvement du poignet → accéléromètre → signal sur 3 axes → filtrage → détection de pas → estimation de cadence.
+Exemple : course
+Mouvement du poignet → accéléromètre → signal sur 3 axes → filtrage → détection de pas → estimation de cadence.
+Idée clé : la donnée brute n’est pas encore une information utile.
+Choisir la famille en fonction du besoin, pas de la mode
+CARTOGRAPHIEInertielsMouvement,orientationAccéléromètre • gyroscope • IMUPas, chute, postureCARTOGRAPHIEInertielsMouvement,orientationAccéléromètre • gyroscope • IMUPas, chute, posturePhysiologiquesRéponse du corpsPPG • ECG • SpO₂ • EMGCardio, sommeil,rééducationPhysiologiquesRéponse du corpsPPG • ECG • SpO₂ • EMGCardio, sommeil,rééducationEnvironnementauxMilieu ambiantUV • humidité • températureExposition, confort,sécuritéEnvironnementauxMilieu ambiantUV • humidité • températureExposition, confort,sécuritéContextuelsPosition et interactionGPS • micro • pressionActivité, localisation, assistanceContextuelsPosition et interactionGPS • micro • pressionActivité, localisation, assistance
+CARTOGRAPHIE
+Inertiels
+Mouvement,
+orientation
+Accéléromètre • gyroscope • IMU
+Pas, chute, posture
+CARTOGRAPHIE
+Inertiels
+Mouvement,
+orientation
+Accéléromètre • gyroscope • IMU
+Pas, chute, posture
+Physiologiques
+Réponse du corps
+PPG • ECG • SpO₂ • EMG
+Cardio, sommeil,
+rééducation
+Physiologiques
+Réponse du corps
+PPG • ECG • SpO₂ • EMG
+Cardio, sommeil,
+rééducation
+Environnementaux
+Milieu ambiant
+UV • humidité • température
+Exposition, confort,
+sécurité
+Environnementaux
+Milieu ambiant
+UV • humidité • température
+Exposition, confort,
+sécurité
+Contextuels
+Position et interaction
+GPS • micro • pression
+Activité, localisation, assistance
+Contextuels
+Position et interaction
+GPS • micro • pression
+Activité, localisation, assistance
+Défi flash : choisissez pour votre projet une famille prioritaire, une complémentaire et une que vous excluez — avec justification.Défi flash : choisissez pour votre projet une famille prioritaire, une complémentaire et une que vous excluez — avec justification.
+Défi flash : choisissez pour votre projet une famille prioritaire, une complémentaire et une que vous excluez — avec justification.
+Défi flash : choisissez pour votre projet une famille prioritaire, une complémentaire et une que vous excluez — avec justification.
+IMU : observer le mouvement, pas seulement compter les pas
+IMUAccéléromètreAccélération linéaireAxes x, y, zPas, impacts, vibrationsIMUAccéléromètreAccélération linéaireAxes x, y, zPas, impacts, vibrationsGyroscopeVitesse angulaireRotation du segment Geste, orientationGyroscopeVitesse angulaireRotation du segment Geste, orientationMagnétomètreChamp magnétiqueAide à l’orientation Cap et navigationMagnétomètreChamp magnétiqueAide à l’orientation Cap et navigationUne IMU regroupe souvent plusieurs de ces capteurs : 6 axes ou G axes.Une IMU regroupe souvent plusieurs de ces capteurs : 6 axes ou G axes.
+IMU
+Accéléromètre
+Accélération linéaire
+Axes x, y, z
+Pas, impacts, vibrations
+IMU
+Accéléromètre
+Accélération linéaire
+Axes x, y, z
+Pas, impacts, vibrations
+Gyroscope
+Vitesse angulaire
+Rotation du segment Geste, orientation
+Gyroscope
+Vitesse angulaire
+Rotation du segment Geste, orientation
+Magnétomètre
+Champ magnétique
+Aide à l’orientation Cap et navigation
+Magnétomètre
+Champ magnétique
+Aide à l’orientation Cap et navigation
+Une IMU regroupe souvent plusieurs de ces capteurs : 6 axes ou G axes.
+Une IMU regroupe souvent plusieurs de ces capteurs : 6 axes ou G axes.
+Question : où placeriez-vous une IMU pour analyser la posture d’un étudiant devant son ordinateur ?
+Pourquoi ?
+Même capteur, mesures et erreurs différentes
+ÉQUIPES • 8 MINÉQUIPES • 8 MINScénario : détecter une chute chez une personne âgée. Quel emplacement choisiriez-vous ?
+ÉQUIPES • 8 MIN
+ÉQUIPES • 8 MIN
+ChaussureBien placeeRiqsque d’oublieEcartéChaussureBien placeeRiqsque d’oublieEcartéBassin / ceintureProche de centre de masseConfort moyenMesure fiableBassin / ceintureProche de centre de masseConfort moyenMesure fiableEmplacementAvantageLimite / risqueVotre décisionPoignetDétection préciseMouvement de bras Faux negativeEmplacementAvantageLimite / risqueVotre décisionPoignetDétection préciseMouvement de bras Faux negativeRestitution : « Nous plaçons le capteur sur … car … ; nous acceptons le compromis … »Restitution : « Nous plaçons le capteur sur … car … ; nous acceptons le compromis … »
+Chaussure
+Bien placee
+Riqsque d’oublie
+Ecarté
+Chaussure
+Bien placee
+Riqsque d’oublie
+Ecarté
+Bassin / ceinture
+Proche de centre de masse
+Confort moyen
+Mesure fiable
+Bassin / ceinture
+Proche de centre de masse
+Confort moyen
+Mesure fiable
+Emplacement
+Avantage
+Limite / risque
+Votre décision
+Poignet
+Détection précise
+Mouvement de bras 
+Faux negative
+Emplacement
+Avantage
+Limite / risque
+Votre décision
+Poignet
+Détection précise
+Mouvement de bras 
+Faux negative
+Restitution : « Nous plaçons le capteur sur … car … ; nous acceptons le compromis … »
+Restitution : « Nous plaçons le capteur sur … car … ; nous acceptons le compromis … »
+GGFocus : les capteurs physiologiques
+G
+G
+Mesurer le corps est utile, mais exigeant
+SIGNAL BIOCapteurPPGVariations optiques du volume sanguinFréquence cardiaqueMouvement, lumière, contactPoint de vigilanceService possibleMesureSIGNAL BIOCapteurPPGVariations optiques du volume sanguinFréquence cardiaqueMouvement, lumière, contactPoint de vigilanceService possibleMesureECGActivité électrique cardiaqueRythme cardiaqueÉlectrodes, contact, artefactsECGActivité électrique cardiaqueRythme cardiaqueÉlectrodes, contact, artefactsSpO₂Estimation de saturation en oxygèneSuivi physiologiquePosition et mouvementSpO₂Estimation de saturation en oxygèneSuivi physiologiquePosition et mouvementTempérature cutanéeTempérature à la surface de la peauTendance, confort≠ température centraleTempérature cutanéeTempérature à la surface de la peauTendance, confort≠ température centraleEMG / GSRMuscle / conductance cutanéeGeste, réponse électrodermalePlacement et contexteEMG / GSRMuscle / conductance cutanéeGeste, réponse électrodermalePlacement et contexte
+SIGNAL BIO
+Capteur
+PPG
+Variations optiques du volume sanguin
+Fréquence cardiaque
+Mouvement, lumière, contact
+Point de vigilance
+Service possible
+Mesure
+SIGNAL BIO
+Capteur
+PPG
+Variations optiques du volume sanguin
+Fréquence cardiaque
+Mouvement, lumière, contact
+Point de vigilance
+Service possible
+Mesure
+ECG
+Activité électrique cardiaque
+Rythme cardiaque
+Électrodes, contact, artefacts
+ECG
+Activité électrique cardiaque
+Rythme cardiaque
+Électrodes, contact, artefacts
+SpO₂
+Estimation de saturation en oxygène
+Suivi physiologique
+Position et mouvement
+SpO₂
+Estimation de saturation en oxygène
+Suivi physiologique
+Position et mouvement
+Température cutanée
+Température à la surface de la peau
+Tendance, confort
+≠ température centrale
+Température cutanée
+Température à la surface de la peau
+Tendance, confort
+≠ température centrale
+EMG / GSR
+Muscle / conductance cutanée
+Geste, réponse électrodermale
+Placement et contexte
+EMG / GSR
+Muscle / conductance cutanée
+Geste, réponse électrodermale
+Placement et contexte
+Une mesure physiologique wearable est une estimation contextualisée, pas un diagnostic médical automatique.Une mesure physiologique wearable est une estimation contextualisée, pas un diagnostic médical automatique.
+Une mesure physiologique wearable est une estimation contextualisée, pas un diagnostic médical automatique.
+Une mesure physiologique wearable est une estimation contextualisée, pas un diagnostic médical automatique.
+1010Mini-lab : lire un signal
+10
+10
+Avant de croire une métrique, évaluez la qualité de la mesure
+BINÔMES • 5 MINSignal A∿ ∿ ∿ ∿Périodique • amplitude stableBINÔMES • 5 MINSignal A∿ ∿ ∿ ∿Périodique • amplitude stableSignal B⌁ ↑ ⌁ ↑Pics brusques • amplitude irrégulièreSignal B⌁ ↑ ⌁ ↑Pics brusques • amplitude irrégulièreSignal C⌁⌁⌁⌁⌁Dérive lente • bruit rapideSignal C⌁⌁⌁⌁⌁Dérive lente • bruit rapideAssociez chaque signal à une cause : mesure au repos de bonne qualité • mouvement • contact capteur-peauinstable.Puis proposez une action : filtrage • fixation • contrôle qualité • changement de placement • fusion de capteurs.Associez chaque signal à une cause : mesure au repos de bonne qualité • mouvement • contact capteur-peauinstable.Puis proposez une action : filtrage • fixation • contrôle qualité • changement de placement • fusion de capteurs.
+BINÔMES • 5 MIN
+Signal A
+∿ ∿ ∿ ∿
+Périodique • amplitude stable
+BINÔMES • 5 MIN
+Signal A
+∿ ∿ ∿ ∿
+Périodique • amplitude stable
+Signal B
+⌁ ↑ ⌁ ↑
+Pics brusques • amplitude irrégulière
+Signal B
+⌁ ↑ ⌁ ↑
+Pics brusques • amplitude irrégulière
+Signal C
+⌁⌁⌁⌁⌁
+Dérive lente • bruit rapide
+Signal C
+⌁⌁⌁⌁⌁
+Dérive lente • bruit rapide
+Associez chaque signal à une cause : mesure au repos de bonne qualité • mouvement • contact capteur-peau
+instable.
+Puis proposez une action : filtrage • fixation • contrôle qualité • changement de placement • fusion de capteurs.
+Associez chaque signal à une cause : mesure au repos de bonne qualité • mouvement • contact capteur-peau
+instable.
+Puis proposez une action : filtrage • fixation • contrôle qualité • changement de placement • fusion de capteurs.
+1111Du signal à la décision
+11
+11
+ActionAlerte • vibration • transmission→5Pics • énergie • variance • fréquenceCaractéristiq3ARCHITECTURE1AcquisitionÉchantillonnage • ADC • horodatage→2ues→→4InterprétationSeuil • règle • IA • anomaliePrétraitementFiltrage • calibration • normalisationActionAlerte • vibration • transmission→5Pics • énergie • variance • fréquenceCaractéristiq3ARCHITECTURE1AcquisitionÉchantillonnage • ADC • horodatage→2ues→→4InterprétationSeuil • règle • IA • anomaliePrétraitementFiltrage • calibration • normalisationUn pipeline embarqué rend la mesure exploitable
+Action
+Alerte • vibration • transmission
+→5
+Pics • énergie • variance • fréquence
+Caractéristiq
+3
+ARCHITECTURE
+1
+Acquisition
+Échantillonnage • ADC • horodatage
+→2
+ues
+→
+→4
+Interprétation
+Seuil • règle • IA • anomalie
+Prétraitement
+Filtrage • calibration • normalisation
+Action
+Alerte • vibration • transmission
+→5
+Pics • énergie • variance • fréquence
+Caractéristiq
+3
+ARCHITECTURE
+1
+Acquisition
+Échantillonnage • ADC • horodatage
+→2
+ues
+→
+→4
+Interprétation
+Seuil • règle • IA • anomalie
+Prétraitement
+Filtrage • calibration • normalisation
+Exemple : chuteIMU → fenêtre de données → pic d’accélération + changement d’orientation + immobilité → score de confiance→ confirmation utilisateur → alerte.Exemple : chuteIMU → fenêtre de données → pic d’accélération + changement d’orientation + immobilité → score de confiance→ confirmation utilisateur → alerte.
+Exemple : chute
+IMU → fenêtre de données → pic d’accélération + changement d’orientation + immobilité → score de confiance
+→ confirmation utilisateur → alerte.
+Exemple : chute
+IMU → fenêtre de données → pic d’accélération + changement d’orientation + immobilité → score de confiance
+→ confirmation utilisateur → alerte.
+Pourquoi une règle unique « accélération > seuil » produit-elle des faux positifs ?Pourquoi une règle unique « accélération > seuil » produit-elle des faux positifs ?
+Pourquoi une règle unique « accélération > seuil » produit-elle des faux positifs ?
+Pourquoi une règle unique « accélération > seuil » produit-elle des faux positifs ?
+1212Où traiter la donnée ?
+12
+12
+Edge, smartphone ou cloud : un choix de compromis
+DÉBATWearable / Edge+ Faible latence+ Fonctionne hors connexion– Calcul et énergie limitésAlerte immédiateDÉBATWearable / Edge+ Faible latence+ Fonctionne hors connexion– Calcul et énergie limitésAlerte immédiateSmartphone+ Calcul et interface+ Connectivité disponible– Dépend de la liaisonTableau de bordSmartphone+ Calcul et interface+ Connectivité disponible– Dépend de la liaisonTableau de bordCloud+ Historique et entraînement IA+ Analyse longue durée– Réseau et confidentialitéSuivi longitudinalCloud+ Historique et entraînement IA+ Analyse longue durée– Réseau et confidentialitéSuivi longitudinalVote argumenté : quelle décision de votre projet doit absolument rester locale ?Vote argumenté : quelle décision de votre projet doit absolument rester locale ?
+DÉBAT
+Wearable / Edge
++ Faible latence
++ Fonctionne hors connexion
+– Calcul et énergie limités
+Alerte immédiate
+DÉBAT
+Wearable / Edge
++ Faible latence
++ Fonctionne hors connexion
+– Calcul et énergie limités
+Alerte immédiate
+Smartphone
++ Calcul et interface
++ Connectivité disponible
+– Dépend de la liaison
+Tableau de bord
+Smartphone
++ Calcul et interface
++ Connectivité disponible
+– Dépend de la liaison
+Tableau de bord
+Cloud
++ Historique et entraînement IA
++ Analyse longue durée
+– Réseau et confidentialité
+Suivi longitudinal
+Cloud
++ Historique et entraînement IA
++ Analyse longue durée
+– Réseau et confidentialité
+Suivi longitudinal
+Vote argumenté : quelle décision de votre projet doit absolument rester locale ?
+Vote argumenté : quelle décision de votre projet doit absolument rester locale ?
+1313La contrainte énergie
+13
+13
+Mesurer coûte de l’énergie
+DÉFI • 5 MINCe qui consommeÉchantillonnageCapteurs actifs Calcul localRadio, écran, vibrationDÉFI • 5 MINCe qui consommeÉchantillonnageCapteurs actifs Calcul localRadio, écran, vibrationStratégiesMesure périodiqueDéclenchement sur événement Veille / réveilEnvoi de caractéristiquesStratégiesMesure périodiqueDéclenchement sur événement Veille / réveilEnvoi de caractéristiquesQuestion critiqueObjectif : 48 hQue risque-t-on de perdre ? Quelle donnée est prioritaire ?Question critiqueObjectif : 48 hQue risque-t-on de perdre ? Quelle donnée est prioritaire ?
+DÉFI • 5 MIN
+Ce qui consomme
+Échantillonnage
+Capteurs actifs Calcul local
+Radio, écran, vibration
+DÉFI • 5 MIN
+Ce qui consomme
+Échantillonnage
+Capteurs actifs Calcul local
+Radio, écran, vibration
+Stratégies
+Mesure périodique
+Déclenchement sur événement Veille / réveil
+Envoi de caractéristiques
+Stratégies
+Mesure périodique
+Déclenchement sur événement Veille / réveil
+Envoi de caractéristiques
+Question critique
+Objectif : 48 h
+Que risque-t-on de perdre ? Quelle donnée est prioritaire ?
+Question critique
+Objectif : 48 h
+Que risque-t-on de perdre ? Quelle donnée est prioritaire ?
+Choisissez une stratégie pour votre projet et écrivez dans le chat : « Nous économisons l’énergie en … ; le risque est …»Choisissez une stratégie pour votre projet et écrivez dans le chat : « Nous économisons l’énergie en … ; le risque est …»
+Choisissez une stratégie pour votre projet et écrivez dans le chat : « Nous économisons l’énergie en … ; le risque est …
+»
+Choisissez une stratégie pour votre projet et écrivez dans le chat : « Nous économisons l’énergie en … ; le risque est …
+»
+1414Fiabilité, confort et données responsables
+14
+14
+Un wearable utile doit être acceptable au quotidien
+CONTRAINTESQualité techniqueCalibration et dériveBruit et artefacts Synchronisation Tests réalistesCONTRAINTESQualité techniqueCalibration et dériveBruit et artefacts Synchronisation Tests réalistesQualité d’usageConfort et poidsContact peau / textile Sueur et lavage Recharge simpleQualité d’usageConfort et poidsContact peau / textile Sueur et lavage Recharge simpleDonnées responsablesMinimisationTransparence SécuritéConsentement utilisateurDonnées responsablesMinimisationTransparence SécuritéConsentement utilisateurQuestion : le fait de pouvoir mesurer une donnée signifie-t-il qu’il faut la collecter ?Question : le fait de pouvoir mesurer une donnée signifie-t-il qu’il faut la collecter ?
+CONTRAINTES
+Qualité technique
+Calibration et dérive
+Bruit et artefacts Synchronisation Tests réalistes
+CONTRAINTES
+Qualité technique
+Calibration et dérive
+Bruit et artefacts Synchronisation Tests réalistes
+Qualité d’usage
+Confort et poids
+Contact peau / textile Sueur et lavage Recharge simple
+Qualité d’usage
+Confort et poids
+Contact peau / textile Sueur et lavage Recharge simple
+Données responsables
+Minimisation
+Transparence Sécurité
+Consentement utilisateur
+Données responsables
+Minimisation
+Transparence Sécurité
+Consentement utilisateur
+Question : le fait de pouvoir mesurer une donnée signifie-t-il qu’il faut la collecter ?
+Question : le fait de pouvoir mesurer une donnée signifie-t-il qu’il faut la collecter ?
+1515Étude de cas : le faux positif
+15
+15
+ÉQUIPES • 10 MINUn bracelet IMU détecte une forte accélération puis une immobilité. L’utilisateur le pose brutalement sur une table : alerte envoyée à la famille.ÉQUIPES • 10 MINUn bracelet IMU détecte une forte accélération puis une immobilité. L’utilisateur le pose brutalement sur une table : alerte envoyée à la famille.Concevoir une alerte de chute qui respecte l’utilisateur
+ÉQUIPES • 10 MIN
+Un bracelet IMU détecte une forte accélération puis une immobilité. L’utilisateur le pose brutalement sur une table : alerte envoyée à la famille.
+ÉQUIPES • 10 MIN
+Un bracelet IMU détecte une forte accélération puis une immobilité. L’utilisateur le pose brutalement sur une table : alerte envoyée à la famille.
+Capteurs / informations additionnelsLogique de décisionInteraction utilisateurCritère d’évaluationGyroscope + capteur de port au poignetCombiner plusieurs conditions Vibration et demande une confirmation Réduire les faux positifs Capteurs / informations additionnelsLogique de décisionInteraction utilisateurCritère d’évaluationGyroscope + capteur de port au poignetCombiner plusieurs conditions Vibration et demande une confirmation Réduire les faux positifs 
+Capteurs / informations additionnels
+Logique de décision
+Interaction utilisateur
+Critère d’évaluation
+Gyroscope + capteur de port au poignet
+Combiner plusieurs conditions
+ Vibration et demande une confirmation 
+Réduire les faux positifs 
+Capteurs / informations additionnels
+Logique de décision
+Interaction utilisateur
+Critère d’évaluation
+Gyroscope + capteur de port au poignet
+Combiner plusieurs conditions
+ Vibration et demande une confirmation 
+Réduire les faux positifs 
+Pistes : gyroscope • détection du port • délai • vibration • annulation • score de confiance.
+1616Atelier projet : Fiche Capteurs s Décision
+16
+16
+ÉQUIPES • 25 MINBesoin cibléUtilisateur • contexte • problèmeGrandeur(s) à observerMouvement • température • pression…ÉQUIPES • 25 MINBesoin cibléUtilisateur • contexte • problèmeGrandeur(s) à observerMouvement • température • pression…TraitementFiltrage • caractéristiques • seuil / IATraitementFiltrage • caractéristiques • seuil / IADécision / serviceAlerte • conseil • suiviDécision / serviceAlerte • conseil • suiviReprenez le wearable présenté dans votre Pitch 1
+ÉQUIPES • 25 MIN
+Besoin ciblé
+Utilisateur • contexte • problème
+Grandeur(s) à observer
+Mouvement • température • pression…
+ÉQUIPES • 25 MIN
+Besoin ciblé
+Utilisateur • contexte • problème
+Grandeur(s) à observer
+Mouvement • température • pression…
+Traitement
+Filtrage • caractéristiques • seuil / IA
+Traitement
+Filtrage • caractéristiques • seuil / IA
+Décision / service
+Alerte • conseil • suivi
+Décision / service
+Alerte • conseil • suivi
+Capteur(s) et placementType • raison • confortCapteur(s) et placementType • raison • confortArchitectureEdge • smartphone • cloudArchitectureEdge • smartphone • cloudDonnée bruteUnité • fréquence • fenêtreDonnée bruteUnité • fréquence • fenêtreRisque s indicateurErreur • autonomie • confidentialité •succèsRisque s indicateurErreur • autonomie • confidentialité •succèsContrainte tirée au sort : 48 h • sans caméra • données non brutes • résistant à la transpiration • coût limité.Contrainte tirée au sort : 48 h • sans caméra • données non brutes • résistant à la transpiration • coût limité.
+Capteur(s) et placement
+Type • raison • confort
+Capteur(s) et placement
+Type • raison • confort
+Architecture
+Edge • smartphone • cloud
+Architecture
+Edge • smartphone • cloud
+Donnée brute
+Unité • fréquence • fenêtre
+Donnée brute
+Unité • fréquence • fenêtre
+Risque s indicateurErreur • autonomie • confidentialité •
+succès
+Risque s indicateurErreur • autonomie • confidentialité •
+succès
+Contrainte tirée au sort : 48 h • sans caméra • données non brutes • résistant à la transpiration • coût limité.
+Contrainte tirée au sort : 48 h • sans caméra • données non brutes • résistant à la transpiration • coût limité.
+1717Micro-pitch technique
+17
+17
+2 minutes par équipe + 1 question technique d’un pair
+RESTITUTION1. Mesure« Nous mesurons … »… afin de répondre à …RESTITUTION1. Mesure« Nous mesurons … »… afin de répondre à …2. Capteur +placement« Nous utilisons … »… placé sur … car …2. Capteur +placement« Nous utilisons … »… placé sur … car …3. Décision« Le système estime /déclenche … »… lorsque …3. Décision« Le système estime /déclenche … »… lorsque …4. Compromis +validation« Nous privilégions … »« Réussi si … »4. Compromis +validation« Nous privilégions … »« Réussi si … »
+RESTITUTION
+1. Mesure
+« Nous mesurons … »
+… afin de répondre à …
+RESTITUTION
+1. Mesure
+« Nous mesurons … »
+… afin de répondre à …
+2. Capteur +
+placement
+« Nous utilisons … »
+… placé sur … car …
+2. Capteur +
+placement
+« Nous utilisons … »
+… placé sur … car …
+3. Décision
+« Le système estime /
+déclenche … »
+… lorsque …
+3. Décision
+« Le système estime /
+déclenche … »
+… lorsque …
+4. Compromis +
+validation
+« Nous privilégions … »
+« Réussi si … »
+4. Compromis +
+validation
+« Nous privilégions … »
+« Réussi si … »
+Question obligatoire entre pairs : « Comment gérez-vous les artefacts, l’autonomie ou la confidentialité ? »Question obligatoire entre pairs : « Comment gérez-vous les artefacts, l’autonomie ou la confidentialité ? »
+Question obligatoire entre pairs : « Comment gérez-vous les artefacts, l’autonomie ou la confidentialité ? »
+Question obligatoire entre pairs : « Comment gérez-vous les artefacts, l’autonomie ou la confidentialité ? »
+1818Feedback entre pairs
+18
+18
+ÉVALUATIONCritèreÉVALUATIONCritère212100Évaluer une architecture, pas seulement une idée
+ÉVALUATIONCritère
+ÉVALUATIONCritère
+2
+1
+2
+1
+0
+0
+Pertinence capteur-besoin
+Incohérente
+Partielle
+Claire et justifiée
+Placement et confort
+Non traité
+Évoqué
+Argumenté
+Chaîne de traitement
+Absente
+Générale
+Logique et réaliste
+Gestion des erreurs
+Absente
+Un risque cité
+Réduction proposée
+Décision et valeur
+Floues
+Plausibles
+Mesurables
+Données et énergie
+Non traitées
+Contrainte citée
+Compromis explicite
+À la fin : chaque groupe écrit une amélioration précise qu’il apportera à sa fiche.
+1G1GQuiz de consolidation
+1G
+1G
+Exit ticket individuel : 5 minutes
+QUIZQUIZ
+QUIZ
+QUIZ
+Quelle différence entre grandeur physique et information utile ?
+1122Pourquoi le placement d’une IMU influence-t-il une détection ?
+1
+1
+2
+2
+33Citez une source d’artefact pour une mesure PPG.
+3
+3
+44Donnez un avantage du traitement local sur le wearable.
+4
+4
+55Quelle décision de conception peut améliorer l’autonomie ?
+5
+5
+Question finale : quel capteur ajouteriez-vous à votre projet, et quelle nouvelle contrainte introduirait-il ?Question finale : quel capteur ajouteriez-vous à votre projet, et quelle nouvelle contrainte introduirait-il ?
+Question finale : quel capteur ajouteriez-vous à votre projet, et quelle nouvelle contrainte introduirait-il ?
+Question finale : quel capteur ajouteriez-vous à votre projet, et quelle nouvelle contrainte introduirait-il ?
+2020Synthèse
+20
+20
+Les idées à retenir
+SYNTHÈSE
+Les capteurs sont les portes d’entrée du monde physique vers le système wearable. Une mesure doit être liée à un besoin, un contexte et une décision explicite.
+Placement, contact, mouvement et environnement influencent fortement les signaux. Une chaîne robuste inclut acquisition, contrôle qualité, traitement et action adaptée. Les compromis précision–autonomie–confort–confidentialité doivent être justifiés.
+Un prototype se valide avec des indicateurs mesurables, y compris ses erreurs possibles.
+Votre fiche devient la section « Capteurs s Données » du dossier de conception.Votre fiche devient la section « Capteurs s Données » du dossier de conception.
+Votre fiche devient la section « Capteurs s Données » du dossier de conception.
+Votre fiche devient la section « Capteurs s Données » du dossier de conception.
+2121Avant la prochaine séance
+21
+21
+Observer un objet réel et préparer le prototypage
+PRÉPARATIONPRÉPARATIONChoisissez un objet connecté auquel vous avez accès : smartwatch, smartphone, écouteurs, bague, bracelet sportif…
+PRÉPARATION
+PRÉPARATION
+Observez3 capteurs probables1 fonctionnalité par capteurObservez3 capteurs probables1 fonctionnalité par capteurAnalysez1 donnée imprécise ou biaisée1 cause possibleAnalysez1 donnée imprécise ou biaisée1 cause possibleProposez1 amélioration1 question techniqueProposez1 amélioration1 question techniqueProchaine séance : passer de la sélection du capteur au prototypage — acquisition, microcontrôleur,communication et premiers essais.Prochaine séance : passer de la sélection du capteur au prototypage — acquisition, microcontrôleur,communication et premiers essais.
+Observez
+3 capteurs probables
+1 fonctionnalité par capteur
+Observez
+3 capteurs probables
+1 fonctionnalité par capteur
+Analysez
+1 donnée imprécise ou biaisée
+1 cause possible
+Analysez
+1 donnée imprécise ou biaisée
+1 cause possible
+Proposez
+1 amélioration
+1 question technique
+Proposez
+1 amélioration
+1 question technique
+Prochaine séance : passer de la sélection du capteur au prototypage — acquisition, microcontrôleur,
+communication et premiers essais.
+Prochaine séance : passer de la sélection du capteur au prototypage — acquisition, microcontrôleur,
+communication et premiers essais.
+Séance en ligne
+
+
+
+=================== PDF: C:\Users\admab\OneDrive\Bureau\5SLEAM1\Wearable Technologies\SentinelBand_—_Description_complète_du_projet.pdf ===================
+Num pages: 7
+
+--- Page 1 ---
+SentinelBand  — Description  compl è te  du  
+projet
+1. Identiﬁcation du projet
+Nom : SentinelBand
+Domaine : Technologies portables et sécurité des travailleurs isolés
+Contexte pédagogique : ESPRIT
+Équipe : Core Circuitry
+Source : présentation « Wearable Technologies » fournie par l’équipe.
+SentinelBand est un dispositif portable destiné à améliorer la sécurité des personnes qui 
+travaillent seules dans des environnements isolés ou dangereux. Il surveille des paramètres 
+physiologiques et les mouvements du travailleur. Lorsqu’une situation anormale est 
+détectée, le système lance une vériﬁcation, puis transmet automatiquement une alerte et la 
+position GPS lorsque le danger est conﬁrmé.
+Les éléments explicitement présents dans la présentation sont distingués des choix 
+techniques qui restent à déﬁnir.
+2. Membres de l’équipe
+Le projet est réalisé par :
+• Ameni Mersani
+• Adem ABOUEB
+• Aziz AYARI
+• Nesrine FEZZANI
+• Mohamed Khalil HAMMAMI
+• Mohamed Wassef MNASRI
+3. Problématique et utilisateurs cibles
+Utilisateur cible
+SentinelBand s’adresse aux ouvriers et techniciens isolés, notamment aux électriciens, 
+aux agents de maintenance et aux agents d’exploitation.
+Objectif principal : détecter rapidement une chute, une immobilité anormale, un 
+malaise ou une anomalie cardiaque aﬁn de réduire le délai d’intervention.
+--- Page 2 ---
+Contexte d’utilisation
+Le système vise les interventions réalisées dans une zone reculée ou dangereuse, sans 
+supervision directe. Une chute, un malaise ou une anomalie cardiaque peut alors passer 
+inaperçu. Cette absence de détection entraîne un retard dans l’arrivée des secours ou des 
+collègues.
+Besoin fonctionnel
+Le dispositif doit détecter précocement les situations critiques, vériﬁer les anomalies aﬁn 
+de limiter les fausses alertes, puis localiser et prévenir rapidement les personnes capables 
+d’intervenir.
+4. Solution proposée
+SentinelBand repose sur deux éléments complémentaires :
+1. Un bracelet connecté, porté au poignet, qui mesure la fréquence cardiaque.
+2. Un module ﬁxé à la ceinture, qui détecte les chutes et l’immobilité, fournit la 
+position GPS et assure la centralisation ainsi que la transmission des données.
+Le poignet est utilisé pour la mesure cardiaque. Le module de ceinture est placé près du 
+centre de masse aﬁn d’améliorer la ﬁabilité de l’analyse des mouvements. Le dispositif 
+doit rester discret et s’intégrer à la ceinture porte-outils existante.
+Une contrainte explicite du projet est l’absence de caméra.
+5. Architecture technique
+5.1 Bracelet connecté
+Le bracelet est porté au poignet du travailleur. Il intègre un capteur optique MAX30102, 
+utilisé pour mesurer les battements cardiaques et produire une donnée de fréquence 
+cardiaque en continu.
+Les données du bracelet sont transmises sans ﬁl au module ﬁxé à la ceinture. La 
+présentation mentionne une communication de type BLE / RF, sans préciser le protocole 
+déﬁnitif.
+5.2 Module ﬁxé à la ceinture
+Le module est placé à la taille du travailleur. Il regroupe les composants suivants :
+• MPU6050 : accéléromètre et gyroscope utilisés pour détecter une chute, un 
+--- Page 3 ---
+mouvement anormal ou une immobilité ;
+• NEO-6M GPS : module de géolocalisation destiné à fournir la position du travailleur ;
+• Microcontrôleur : composant chargé de recevoir et de centraliser les données du 
+bracelet et des capteurs ;
+• Passerelle ou gateway : fonction de traitement local et de transmission des données 
+vers le système d’alerte.
+Le modèle exact du microcontrôleur et la technologie de communication avec le système 
+d’alerte ne sont pas indiqués dans la présentation.
+5.3 Données analysées
+Le système recoupe principalement :
+• la fréquence cardiaque ;
+• les mouvements et l’orientation du corps ;
+• la présence éventuelle d’une chute ;
+• l’immobilité ;
+• la position GPS.
+L’utilisation de plusieurs capteurs doit permettre de réduire les décisions fondées sur un 
+seul signal isolé.
+5.4 Chaîne fonctionnelle
+mermaid
+Fréquence cardiaque
+BLE / RF
+Aucune anomalie
+Anomalie détectée
+Situation annulée
+Danger confirmé
+ou anomalies multiples
+Bracelet connecté
+MAX30102
+Module fixé à la ceintureMPU6050
+Accéléromètre + gyroscope
+NEO-6M GPS
+Localisation
+Microcontrôleur
+Centralisation
+Analyse des données
+Passerelle État de surveillance
+Situation normale
+Surveillance continue
+Alerte jaune
+Vérifier ou annuler
+Alerte rouge
+Collègues proches
+Notification immédiate
+Centre de supervision
+Alerte + position GPS
+6. Fonctionnement du système d’alerte
+Le système comporte trois états de surveillance.
+6.1 Situation normale
+--- Page 4 ---
+Le système surveille continuellement le travailleur. Les données sont analysées sans 
+notiﬁcation d’urgence tant qu’aucune anomalie signiﬁcative n’est détectée.
+6.2 Alerte jaune
+Une anomalie déclenche une alerte jaune. Cette alerte sert à vériﬁer la situation. Le 
+travailleur doit pouvoir la conﬁrmer ou l’annuler lorsque son état le permet.
+Si la situation est annulée, le dispositif revient à l’état normal. Si le danger est conﬁrmé ou 
+si plusieurs signaux anormaux concordent, le système passe à l’alerte rouge.
+6.3 Alerte rouge
+L’alerte rouge est déclenchée automatiquement lorsqu’un danger est conﬁrmé. La 
+présentation prévoit également ce déclenchement lorsque plusieurs anomalies sont 
+détectées.
+L’alerte rouge entraîne :
+• l’envoi automatique d’une notiﬁcation ;
+• la transmission de la position GPS ;
+• l’information des collègues proches ;
+• l’information du centre de supervision ou du centre médical.
+7. Destinataires des alertes
+La présentation ne précise pas si les notiﬁcations seront envoyées par SMS, appel, 
+application mobile ou interface web. Ce choix reste à déﬁnir.
+8. Contraintes de conception
+Le projet doit respecter les contraintes suivantes :
+• Pas de caméra.
+Destinataire Fonction prévue
+Collègues proches Recevoir une notiﬁcation immédiate aﬁn de 
+pouvoir intervenir sur le terrain.
+Centre de supervision / centre médical Recevoir l’alerte et la position GPS pour 
+coordonner l’intervention.
+--- Page 5 ---
+• Discrétion et faible gêne pour le travailleur.
+• Intégration à la ceinture porte-outils existante.
+• Bracelet au poignet pour favoriser la précision de la mesure cardiaque.
+• Module proche du centre de masse pour améliorer l’analyse des mouvements.
+• Réduction des faux positifs grâce au calibrage et au recoupement de plusieurs 
+capteurs.
+• Réponse rapide après la conﬁrmation d’un danger.
+9. Valeur créée et bénéﬁces attendus
+SentinelBand vise à améliorer la sécurité des travailleurs isolés en transformant les 
+mesures physiologiques et les données de mouvement en une procédure d’intervention 
+structurée.
+Les bénéﬁces attendus sont la détection précoce d’un incident, une réponse ciblée, la 
+localisation GPS du travailleur et la réduction du temps d’intervention. Le dispositif est 
+particulièrement utile lorsque le travailleur ne peut pas demander de l’aide lui-même.
+L’objectif annoncé dans la présentation est un temps de réponse après alerte rouge 
+inférieur à une minute.
+10. Indicateurs de performance
+Ces indicateurs devront être mesurés lors des essais du prototype et des scénarios de 
+terrain.
+11. Risques et limites
+Faux positifs
+Indicateur Rôle ou objectif
+Temps de réponse après alerte rouge Objectif : inférieur à une minute.
+Taux de conversion de l’alerte jaune
+Mesurer la proportion d’alertes jaunes 
+conﬁrmées comme alertes rouges. La valeur 
+cible n’est pas précisée.
+Taux de faux positifs Mesurer la fréquence des alertes sans danger 
+réel. La valeur cible n’est pas précisée.
+--- Page 6 ---
+Un faux positif correspond à une alerte déclenchée alors qu’il n’existe pas de danger 
+réel. La répétition de ces alertes peut provoquer une fatigue d’alerte et réduire 
+l’attention portée aux notiﬁcations.
+Faux négatifs
+Un faux négatif correspond à une situation dangereuse qui n’est pas détectée. Ce risque 
+peut être renforcé lorsque la zone est mal couverte par le réseau et que l’alerte ou la 
+position GPS ne peuvent pas être transmises correctement.
+Mesures de réduction prévues
+La présentation prévoit :
+• un calibrage personnalisé ;
+• un recoupement multi-capteurs ;
+• l’analyse conjointe de la chute, de l’immobilité et de l’anomalie cardiaque ;
+• une alerte jaune avant l’alerte rouge automatique, lorsque la situation le permet.
+12. Déroulement opérationnel
+1. Le travailleur porte le bracelet au poignet et le module à la ceinture.
+2. Le MAX30102 mesure la fréquence cardiaque en continu.
+3. Le MPU6050 analyse les mouvements et contribue à détecter une chute ou une 
+immobilité.
+4. Le NEO-6M fournit la position GPS disponible.
+5. Le microcontrôleur centralise les données reçues.
+6. La passerelle traite localement les informations et les transmet au système d’alerte.
+7. En situation normale, la surveillance continue sans notiﬁcation d’urgence.
+8. Une anomalie déclenche une alerte jaune pour vériﬁcation.
+9. Une situation annulée ramène le système à l’état normal.
+10. Un danger conﬁrmé ou plusieurs anomalies concordantes déclenchent l’alerte rouge.
+11. Les collègues proches et le centre de supervision reçoivent l’alerte et la position GPS 
+disponible.
+13. Éléments restant à déﬁnir
+La présentation ne précise pas encore :
+--- Page 7 ---
+• le modèle exact du microcontrôleur ;
+• le protocole sans ﬁl déﬁnitif entre le bracelet et le module de ceinture ;
+• le moyen de communication avec le centre de supervision ;
+• les seuils de détection d’une chute, d’une immobilité et d’une anomalie cardiaque ;
+• la durée d’autonomie et la capacité des batteries ;
+• la précision GPS attendue ;
+• le comportement en cas de perte de réseau ;
+• le stockage et la protection des données physiologiques ;
+• l’interface destinée aux collègues et au centre de supervision ;
+• les valeurs cibles du taux de faux positifs et du taux de conversion des alertes jaunes ;
+• le protocole détaillé des essais et de validation.
+14. Conclusion
+SentinelBand est un projet de technologie portable consacré à la sécurité des travailleurs 
+isolés. Il associe un bracelet de mesure cardiaque à un module de ceinture capable 
+d’analyser les mouvements, de déterminer la position GPS et de transmettre une alerte.
+La logique à trois niveaux — situation normale, alerte jaune et alerte rouge — cherche à 
+concilier rapidité d’intervention et limitation des fausses alertes. La valeur principale du 
+projet repose sur la détection précoce, la localisation du travailleur et l’information ciblée 
+des personnes capables d’intervenir.
+La réussite du système dépendra principalement de la qualité du calibrage, de la ﬁabilité du 
+recoupement multi-capteurs et de la disponibilité des communications dans les zones 
+isolées.
+Références
+[1] Présentation du projet Wearable Technologies — SentinelBand, Core Circuitry, ESPRIT
+Document préparé à partir de la présentation PDF fournie par l’équipe Core Circuitry.
+Auteur du document : Manus AI
+Date de rédaction : 23 septembre 2026
+
+
+=================== PDF: C:\Users\admab\OneDrive\Bureau\5SLEAM1\Wearable Technologies\Wearable Technologies (1).pdf ===================
+Num pages: 9
+
+--- Page 1 ---
+CORE
+CIRCUITRY
+Wearable Technologies — ESPRIT |
+Ameni Mersani
+1
+--- Page 2 ---
+Adem ABOUEB
+ Aziz AYARI
+ Nesrine FEZZANI
+Mohamed Khalil
+HAMMAMI
+Mohamed Wassef
+MNASRI
+MEMBRES DE L’ÉQUIPE
+2
+--- Page 3 ---
+Utilisateur cible
+ Contexte
+Problème
+SENTINELBAND — SÉCURITÉ DES
+TRAVAILLEURS ISOLÉS
+Ouvrier/technicien isolé
+(électricien, agent de
+maintenance/exploitation)
+ Zone reculée ou dangereuse,
+sans supervision directe
+Chute, malaise ou anomalie cardiaque peut passer inaperçue
+→  secours retardés
+3
+--- Page 4 ---
+SOLUTION
+SentinelBand
+Bracelet (rythme cardiaque)  Boîtier ceinture (chute,
+immobilité, GPS, gateway)
+4
+--- Page 5 ---
+SOLUTION
+Alerte jaune
+(vérifiable/annulable)
+Support corporelLogique d'alerte
+Poignet (précision
+cardiaque) 
+5
+Contrainte imposée :
+Pas de caméra
+Discret
+S'intègre à la ceinture
+porte-outils existante
+Taille
+Proche du centre de masse 
+Fiabilité mouvement
+Peu de faux positifs
+Alerte rouge automatique
+si confirmée
+Collègues 
+Centre de supervision 
+Position GPS
+--- Page 6 ---
+ARCHITECTURE
+6
+--- Page 7 ---
+VALEUR CRÉÉE
+Détection précoce
+Réponse ciblée
+Localisation GPS
+Réduction du temps
+d'intervention
+Support corporelBénéfices 
+Temps de réponse après
+alerte rouge :
+objectif < 1 minute
+Confirmation alerte
+jaune
+Taux de faux positifs
+Taux de conversion
+7
+--- Page 8 ---
+Mesure de réduction
+Risque majeur
+LIMITES
+ Calibrage personnalisé + recoupement
+multi-capteurs 
+Faux positifs (alerte jaune) :
+Fatigue d'alerte ; 
+Faux négatifs (alerte rouge) si zone mal
+couverte
+Chute + immobilité + anomalie
+cardiaque
+Avant alerte rouge automatique
+8
+--- Page 9 ---
+MERCI DE
+VOTRE
+ATTENTION
+9
+
+
+=================== DOCX: C:\Users\admab\OneDrive\Bureau\RENDU.docx ===================
+RENDU  de la séance 5 
+ABOUEB Adem
+L’imedance :
+S11 :
+Gain :
+Directivité :
+
+
+
+=================== DOCX: C:\Users\admab\OneDrive\Bureau\resume ml 1.docx ===================
+----------ch1
+A la fin de ce chapitre, l’étudiant sera capable de:​
+Définir le machine learning​
+Comprendre les approches de machine learning​
+Citer les différents algorithmes de ML​
+Comprendre le pipeline d’un projet ML​
+Donner des exemples de cas concrets relevant de grandes classes de problèmes de machine learning.
+l’Intelligence Artificielle est un domaine de l’informatique dont le but est de recréer un équivalent technologique à l’intelligence humaine.
+L’IA n’est pas une technologie à part entière mais un ensemble de technologies et d’outils
+Intelligence artificielle Systèmes d'imitation de la pensée et des actions humaines
+Machine Learning Systèmes qui apprennent sur la base de grands ensembles de données structurés
+Deep Learning Systèmes qui apprennent via des réseaux neuronaux sans être guidés par l'homme
+C'est quoi ML?
+L'apprentissage automatique, une branche clé de l'intelligence artificielle, permet une informatique autonome capable de surveiller et de protéger les systèmes, les réseaux et les parcs contre les cybermenaces. Largement applicable dans tous les secteurs, il alimente des solutions concrètes dans les domaines de la santé, de la finance et au-delà, favorisant une prise de décision plus éclairée, une défense proactive et une efficacité accrue grâce à des informations basées sur les données.
+Pourquoi Machine Learning ML ?
+Le machine learning peut servir à résoudre des problèmes:
+que l’on ne sait pas résoudre (comme dans l’exemple de la prédiction d’achats)
+que l’on sait résoudre, mais dont on ne sait formaliser en termes algorithmiques comment nous les résolvons (c’est le cas par exemple de la reconnaissance d’images ou de la compréhension du langage naturel)
+que l’on sait résoudre, mais avec des procédures beaucoup trop gourmandes en ressources informatiques (c’est le cas par exemple de la prédiction d’interactions entre molécules de grande taille, pour lesquelles les simulations sont très lourdes).
+​Le machine learning est donc utilisé quand les données sont abondantes (relativement), mais les connaissances peu accessibles ou peu développées.
+Le machine learning repose deux fondamentaux :
+les donnees, qui sont les exemples a partir duquel l'algorithme va apprendre.
+l'algorithme d'apprentissage, qui est la procédure que l'on fait tourner sur les données pour produire un modèle.
+On appelle entraînement le fait de faire tourner un algorithme d'apprentissage sur un jeu de données.
+Type de problème de Machine Learning 
+Apprentissage supervisé  VS apprentissage Non supervisé :
+. Votre machine peut apprendre de 2 méthodes à partie de données : sup et non sup
+. C’est ce que vous cherchez a faire avec vos données ainsi leur forme qui va définir l’utilisation d’une méthode par rapport à une autre méthode. Les donnee7seront le carburant nécessaire pour faire fonctionner votre modèle de ML. C’est exactement comme avec votre voiture : en fonction de son moteur, vous aller mettre de gazole ou du sans-plomb et bien c’est même chose ici les données sont le carburant le modèle de ML le moteur.
+. Sur but est d’apprendre a faire des prédiction  a partir d’une liste d’exemples étiqueté cad accompagnés de la valeur a prédire . les étiquettes servent de professeur et supervisent l’app de l’algo.
+. L’apprentissage d’une tâche par un modèle en se basant sur les données déjà labélisées.
+. pour ce faire, les descripteurs extraits de celle-ci sont fournies a l’entré qui eux sont aussi fournis .
+. Cette comparaison permet d’ajuster les paramètres du modèle pour que ceux-ci soient mieux adaptés à la tâche.
+. Exemple app sup de régression :
+. Les données ne sont pas labélisés, en apprentissage non supervisé le but est de construire un modèle qui trouve par lui-meme des points communs entre les données d’entré.
+. Pendant la phase d’apprentissage, on donne a notre machine plusieurs données  d’entrée, sans savoir de résultat attendu . 
+. La machine va construire des groupes de données avec des caractéristiques similaires. Consiste a identifier des groupe dans les données. Cela permet leur caractéristiques générale, et éventuellement d’inférer de propriétés d’unne observation en fonction du groupe auquel elle appartiant .
+. Exemples  non supervisé de clustering :
+. La segmentation de marché consiste a identifier des groupes de clients ayant un comportement similaire . Cela permet de mieux comprendre leur profil,  et cibler une campagne de publicité, des contenus ou des actions spécifiquement vers certains groupes. La segmentation d’image consiste a identifier les pixels d’une image appartenant a la même région. Identifier des groupes parmi les patients présentent les même symptômes permet d’identifier des sous-types d’une maladie qui pourront être traité différemment.
+. L’apprentissage  semi supervisé consiste a apprendre des étiquettes a partir d’au jeu de données partiellement étiqueté . L’avantage de cette approche est qu’elle permet d’éviter d’avoir a étiqueté des exemples d’apprentissage, ce qui est pertinent quand il est facile d’accumuler des données mais que leurs étiquetage requiert une certaine quantité de travail humain .
+Exemple la classification d’images il est facile d’obtenir une banque de données contenant des certaines de milliers d’image, mais avoir pour chacune d’entre elles l’étiquette qi nous intéresse peut requérir énormément de travail.
+Synthèse : 
+. Le renforcement learning met en œuvre des algorithmes d’apprentissage qui tirent les leçons d’expérience répétées en procédure par essai-erreur .
+. il reproduit ainsi le mecanisme « naturel » d’acquisition de connaissance.
+. Les applications principales de l’apprentissages par renforcement se trouvent dans les jeu (échec ) Robot  chatbot et la voiture autonomes .
+. l’avantage de renforcement learning pour programmer un robot plus besoin d’un long et fastidieux travail de développement. 
+. l’ordinateur apprendra a opérer a réagir réagir a tel événement ou requête pa lui-même.
+
+
+
+=================== DOCX: C:\Users\admab\OneDrive\Bureau\resume.docx ===================
+# 🛡️ SentinelBand — Dossier Technique d'Architecture & Explication du Code
+Ce document constitue la **documentation officielle du projet SentinelBand** à destination des membres de votre groupe, de votre encadrant et pour votre soutenance.
+---
+## 1. 🎯 Présentation & Objectifs du Projet
+**SentinelBand** est un système IoT portable (*Wearable Device*) dédié à la **Protection du Travailleur Isolé (PTI)** et à la sécurité en milieu industriel / santé.
+### Problématique :
+Un travailleur peut être victime d'un accident grave (chute lourde, malaise, immobilisation) ou exposé à des zones dangereuses sans être en mesure d'appeler les secours lui-même.
+### Solution SentinelBand :
+Un bracelet connecté autonome capable de :
+1. **Détecter automatiquement les chutes et l'immobilité** grâce à un classifieur biomécanique embarqué (**Edge AI / TinyML**).
+2. **Géolocaliser** la victime par satellite (GPS).
+3. **Donner l'alerte multi-canaux instantanée** :
+   * **Localement** : Alarme sonore (Buzzer) et visuelle (LED RGB).
+   * **Sur smartphone** : Télémétrie temps réel et sirène d'urgence sur l'application mobile des collègues.
+   * **Réseau cellulaire direct (GSM)** : Envoi d'un SMS d'urgence avec lien Google Maps au maître de travail via le module **SIM800L**.
+---
+## 2. 🏗️ Architecture Globale du Projet (3 Tiers)
+```mermaid
+graph TD
+    subgraph "1. NOEUD EMBARQUÉ (Edge IoT / Bracelet)"
+        ESP[Microcontrôleur ESP32]
+        MPU[IMU MPU6050 : Accel / Gyro] -->|I2C 50Hz| ESP
+        GPS[Module GPS : NMEA] -->|UART2 9600 bauds| ESP
+        SIM[SIM800L : GSM / SMS] <-->|UART1 9600 bauds| ESP
+        BAT[Batterie Li-ion 18650 3.7V] --> SIM
+        ACT[Actionneurs : Buzzer, LED RGB, Bouton SOS] <--> ESP
+    end
+    subgraph "2. SERVEUR & BACKEND (Cloud / Local)"
+        API[Serveur Express.js / Node.js]
+        DB[(Base de données PostgreSQL)]
+        API <--> DB
+    end
+    subgraph "3. APPLICATION MOBILE (Collègues / Supervision)"
+        APP[App Mobile React Native / Expo]
+        MAP[Carte GPS & Suivi Temps Réel]
+        ALARM[Sirène & Modal d'Urgence]
+        APP --> MAP
+        APP --> ALARM
+    end
+    subgraph "4. SUPERVISION CELLULAIRE"
+        PHONE[Téléphone du Maître de Travail]
+    end
+    ESP -->|Wi-Fi / HTTP POST Telemetry| API
+    API -->|REST API & Polling 2s| APP
+    SIM -->|Réseau GSM 2G : SMS Direct| PHONE
+```
+---
+## 3. 🧩 Architecture Logicielle du Firmware ESP32
+Le code embarqué `SentinelBand_NoSIM.ino` est structuré selon une **architecture modulaire non-bloquante** cadencée par timers logiciels (`millis()`) :
+```
+SentinelBand_NoSIM.ino
+ ├── 1. CONFIGURATION & PINOUT (Broches, Wi-Fi, Clé API, Seuils)
+ ├── 2. PILOTES MATÉRIELS (Drivers)
+ │    ├── MPU6050 (Lecture I2C brute @ 50 Hz)
+ │    ├── TinyGPSPlus (Décodage des trames NMEA UART2)
+ │    └── SIM800L (Commandes AT UART1, émission SMS)
+ ├── 3. MOTEUR IA : FALL PROFILE CLASSIFIER (FSM)
+ ├── 4. MACHINE À ÉTATS CENTRALE (NORMAL -> JAUNE -> ROUGE)
+ ├── 5. ACTIONNEURS (Cadence Buzzer, Couleurs LED RGB)
+ ├── 6. TÉLÉMÉTRIE (Construction JSON & HTTP POST Wi-Fi)
+ └── 7. CONSOLE INTERACTIVE (Commandes de test série)
+```
+---
+## 4. 🧠 Explication Détaillée des Algorithmes Clés
+### A. Le Classifieur de Chute Embarqué (Edge AI)
+Contrairement aux systèmes basiques qui sonnent dès qu'on secoue le poignet, SentinelBand implémente une **Machine à États Finis (FSM)** à 4 phases biomécaniques :
+```mermaid
+stateDiagram-v2
+    FP_IDLE --> FP_PREFALL : Vitesse angulaire > 80 dps (Perte d'équilibre)
+    FP_IDLE --> FP_FREEFALL : Accélération < 0.55g (Chute libre directe)
+    FP_PREFALL --> FP_FREEFALL : Chute libre détectée sous 500 ms
+    FP_FREEFALL --> FP_IMPACT : Fin apesanteur (80ms - 1500ms)
+    FP_IMPACT --> FP_CONFIRMED : Pic d'impact > 2.3g (< 800ms après apesanteur)
+    FP_CONFIRMED --> FP_IDLE : Personne relevée spontanément
+```
+1. **Calcul d'orientation post-chute** :
+   $$\theta = \arccos\left(\frac{a_z}{\|a\|}\right) \times \frac{180}{\pi}$$
+   Si $\theta > 50^\circ$, la personne est au sol (allongée).
+2. **Indice de Confiance $C$** :
+   $$C = 0.35 \times S_{\text{FreeFall}} + 0.45 \times S_{\text{Impact}} + 0.20 \times S_{\text{Posture}}$$
+   Si $C \ge 60\%$, la chute est validée. Ce filtrage élimine **99% des faux positifs** (courir, s'asseoir, taper sur une table).
+---
+### B. Cycle de Vie d'une Alerte (Escalade de Sécurité)
+```mermaid
+sequenceDiagram
+    participant T as Travailleur
+    participant ESP as ESP32 (SentinelBand)
+    participant S as Serveur Backend
+    participant M as App Mobile Collègues
+    participant B as Maître de Travail (GSM)
+    Note over ESP: Chute lourde détectée !
+    ESP->>ESP: État JAUNE (Pré-alerte 15 secondes)
+    ESP->>T: Bip intermittent + LED Jaune
+    alt Le travailleur va bien (Fausse alerte)
+        T->>ESP: Appui sur le Bouton SOS
+        ESP->>ESP: Retour État NORMAL (Alerte annulée)
+    else Aucune réaction (Travailleur inconscient)
+        Note over ESP: Timeout 15s écoulé !
+        ESP->>ESP: ESCALADE EN ÉTAT ROUGE
+        ESP->>T: Sirène continue + LED Rouge
+        ESP->>S: HTTP POST /api/telemetry (État: ROUGE)
+        S->>M: Alerte Push + Vibreur + Sirène
+        ESP->>B: Envoi SMS GSM avec lien GPS Google Maps
+    end
+```
+---
+## 5. 🔍 Guide de Lecture du Code ESP32 (Fonction par Fonction)
+Pour expliquer le code à vos camarades lors d'une revue de code, voici le rôle des fonctions principales :
+| Fonction | Rôle & Explication |
+|---|---|
+| **`setup()`** | Initialise les broches (I/O), active l'UART GPS à 9600 bauds, configure le bus I2C pour le MPU6050, initialise le SIM800L et se connecte au Wi-Fi. |
+| **`loop()`** | Boucle principale non-bloquante exécutant les tâches à leurs fréquences respectives sans aucun `delay()` bloquant. |
+| **`readSensors()`** | Échantillonne le MPU6050 à **50 Hz (toutes les 20 ms)** et passe les données au moteur de détection de chute. |
+| **`runFallFSM()`** | Le cœur de l'IA : suit les phases (Apesanteur $\to$ Impact $\to$ Angle) et calcule le score de confiance. |
+| **`evaluateState()`** | Gère les transitions entre `NORMAL`, `YELLOW` et `RED` (timeouts, seuils, immobilité prolongée). |
+| **`enterState()`** | Déclenche les actions lors d'un changement d'état (active la sirène, et déclenche le SMS en état ROUGE). |
+| **`sendEmergencySMS()`** | Construit le message d'urgence au format texte avec les coordonnées GPS et le transmet via commandes AT au module SIM800L. |
+| **`telemetryTick()`** | Formate le payload JSON et l'envoie au backend Node.js par requête HTTP POST (toutes les 4s en normal, toutes les 2s en alerte). |
+| **`checkButton()`** | Écoute le bouton physique avec anti-rebond (300 ms) pour permettre au travailleur d'annuler une fausse alerte. |
+---
+## 6. 🎮 Scénario Type pour Votre Démonstration Orale
+Pour faire une démonstration réussie devant votre jury :
+1. **Montrer la veille normale (NORMAL)** :
+   * L'ESP32 a la LED verte allumée.
+   * L'application mobile affiche `État: NORMAL`, température 25°C, accélération 1.00g.
+2. **Déclencher la chute de test** :
+   * Tapez **`f`** dans le moniteur série.
+   * L'ESP32 passe en **JAUNE** : le buzzer fait un bip d'avertissement et la LED devient jaune.
+   * Montrez le compte à rebours de 15 secondes.
+3. **Montrer l'escalade automatique en ROUGE** :
+   * Au bout de 15s sans appui sur le bouton, le boîtier passe en **ROUGE**.
+   * Le buzzer sonne à fond, la LED clignote rouge.
+   * L'application mobile des collègues affiche la grande **bannière rouge clignotante** et vibre.
+   * Le moniteur série affiche l'envoi du **SMS au maître de travail** avec les coordonnées GPS.
+4. **Montrer l'acquittement** :
+   * Appuyez sur le bouton physique du boîtier (ou tapez **`c`**) : le système revient instantanément en vert.
+---
+## 7. ⌨️ Résumé des Commandes Série de Test
+| Touche | Action | Intérêt pour la démonstration |
+|:---:|---|---|
+| **`f`** | Simule une chute biomécanique complète (Confiance 95%) | Démontre l'algorithme d'IA sans jeter le bracelet |
+| **`j`** | Force l'état JAUNE | Montre le pré-avertissement sonore |
+| **`r`** | Force l'état ROUGE direct | Déclenche l'alarme maximale et le SMS |
+| **`c`** | Annulation / Reset | Ramène le boîtier à l'état NORMAL |
+| **`s`** | Rapport de statut instantané | Affiche les capteurs en direct sur la console |
+| **`g`** | Diagnostic GPS | Affiche les satellites et les trames NMEA |
+| **`p`** | Diagnostic SIM800L / GSM | Affiche la qualité réseau et l'état de la carte SIM |
+| **`m`** | Envoi de SMS de test | Valide la ligne téléphonique sans déclencher d'alarme |
+
+
+
+=================== TEXT: C:\Users\admab\OneDrive\Bureau\resumech1ml.md ===================
+### **----------ch1**
+
+##### **A la fin de ce chapitre, l’étudiant sera capable de:​**
+
+##### 
+
+* ##### **Définir le machine learning​**
+* ##### **Comprendre les approches de machine learning​**
+* ##### **Citer les différents algorithmes de ML​**
+* ##### **Comprendre le pipeline d’un projet ML​**
+* ##### **Donner des exemples de cas concrets relevant de grandes classes de problèmes de machine learning.**
+
+
+
+
+
+**• l’Intelligence Artificielle est un domaine de l’informatique dont le but est de recréer un équivalent technologique à l’intelligence humaine.**
+
+
+
+**• L’IA n’est pas une technologie à part entière mais un ensemble de technologies et d’outils**
+
+
+
+* **Intelligence artificielle** Systèmes d'imitation de la pensée et des actions humaines
+* **Machine Learning** Systèmes qui apprennent sur la base de grands ensembles de données structurés
+* **Deep Learning Systèmes** qui apprennent via des réseaux neuronaux sans être guidés par l'homme
+
+
+
+##### C'est quoi ML?
+
+L'apprentissage automatique, une branche clé de l'intelligence artificielle, permet une informatique autonome capable de surveiller et de protéger les systèmes, les réseaux et les parcs contre les cybermenaces. Largement applicable dans tous les secteurs, il alimente des solutions concrètes dans les domaines de la santé, de la finance et au-delà, favorisant une prise de décision plus éclairée, une défense proactive et une efficacité accrue grâce à des informations basées sur les données.
+
+##### Pourquoi Machine Learning ML ?
+
+Le machine learning peut servir à résoudre des problèmes:
+
+* que l’on ne sait pas résoudre (comme dans l’exemple de la prédiction d’achats)
+* que l’on sait résoudre, mais dont on ne sait formaliser en termes algorithmiques comment nous les résolvons (c’est le cas par exemple de la reconnaissance d’images ou de la compréhension du langage naturel)
+* que l’on sait résoudre, mais avec des procédures beaucoup trop gourmandes en ressources informatiques (c’est le cas par exemple de la prédiction d’interactions entre molécules de grande taille, pour lesquelles les simulations sont très lourdes).
+
+​Le machine learning est donc utilisé quand les données sont abondantes (relativement), mais les connaissances peu accessibles ou peu développées.
+
+
+
+Le machine learning repose deux fondamentaux :
+
+* les donnees, qui sont les exemples a partir duquel l'algorithme va apprendre.
+* l'algorithme d'apprentissage, qui est la procédure que l'on fait tourner sur les données pour produire un modèle.
+
+&#x20; On appelle entraînement le fait de faire tourner un algorithme d'apprentissage sur un jeu de données.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+npm run seed
+
+
+
+> sentinelband-api@1.0.0 seed
+
+> node src/seed.js
+
+
+
+Adem | adem@demo.tn | mot de passe: demo1234 | cle boitier: 7a2b9f21b5eb0ad1c60c40607443d03f1f33b6a53ce6de82
+
+Collegue | collegue@demo.tn | mot de passe: demo1234 | cle boitier: 92115adead662d2426828cdc1ecb64f35e9df00ef4cfb045
+
+Liens collegues crees (dans les deux sens).
+
+PS C:\\Users\\admab\\OneDrive\\Bureau\\projet wearable tech\\files\\sentinelband-mobile-backend\\sentinelband\\backend> npm start
+
+
+
+> sentinelband-api@1.0.0 start
+
+> node src/server.js
+
+
+
+
+
+
+=================== TEXT: C:\Users\admab\OneDrive\Bureau\resumech1ml.txt ===================
+
+
+Error reading C:\Users\admab\OneDrive\Bureau\~$adm.docx: File is not a zip file
+
+
+Error reading C:\Users\admab\OneDrive\Bureau\~$apitre 1 2022.docx: File is not a zip file
+
+
+Error reading C:\Users\admab\OneDrive\Bureau\~$chart.docx: File is not a zip file
+
+
+Error reading C:\Users\admab\OneDrive\Bureau\~$hier de charge application mobile.docx: File is not a zip file
+
+
+Error reading C:\Users\admab\OneDrive\Bureau\~$nception d.docx: File is not a zip file
+
+
+Error reading C:\Users\admab\OneDrive\Bureau\~$pport sur l.docx: File is not a zip file
+
+
+Error reading C:\Users\admab\OneDrive\Bureau\~$RENDU.docx: File is not a zip file
+
+
+Error reading C:\Users\admab\OneDrive\Bureau\~$resume.docx: File is not a zip file
+
+
+Error reading C:\Users\admab\OneDrive\Bureau\~$statMA.docx: File is not a zip file
+
+

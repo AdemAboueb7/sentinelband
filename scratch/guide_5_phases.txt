@@ -1,0 +1,294 @@
+SentinelBand — Guide d'implémentation en 5 phases
+Wearable Technologies — ESPRIT · ESP32 · MPU6050 · GY-NEO6MV2 · MQ2 · LM35 · SIM800L · LED RGB · buzzer
+0. Vue d'ensemble
+Exigence
+Réalisation
+Capteur → microcontrôleur, valeurs plausibles
+MPU6050 (I2C), LM35 et MQ2 (ADC), GPS (UART) ; contrôle de plage dans le code
+Condition / seuil → décision
+Machine à états NORMAL → JAUNE → ROUGE
+Actionneur / alerte
+LED RGB + buzzer
+Transmission / tableau de bord
+SMS via SIM800L + page web locale (Wi-Fi AP de l'ESP32)
+Journal série horodaté
+115200 bauds, préfixe [T+secondes] et heure UTC du GPS dès qu'il y a un fix
+Phase
+Étapes du protocole imposé
+Porte de sortie (go / no-go)
+1
+Alimentation, continuité, câblage
+Tensions et continuités conformes aux tableaux
+2
+Bus I2C / UART (SPI : aucun périphérique SPI dans ce projet)
+0x68 détecté ; octets NMEA reçus ; réponse OK du SIM800L
+3
+Code minimal, un module à la fois
+Chaque module donne des valeurs plausibles
+4
+Intégration
+Firmware complet, journal 1 Hz stable
+5
+Validation et preuves
+Scénarios réussis + journal horodaté archivé
+Hypothèses à vérifier : « LM32 » = LM35 (capteur de température) ; LED RGB à cathode commune (sinon mettre LED_ACTIVE_HIGH 0) ; buzzer actif ; un bouton poussoir optionnel sert à annuler l'alerte jaune (sinon : bouger, ou envoyer c sur le port série).
+Outils : Arduino IDE 2.x, carte « ESP32 Dev Module » (paquet Espressif), bibliothèque TinyGPSPlus (Mikal Hart) via le gestionnaire de bibliothèques. Aucune autre bibliothèque : MPU6050 et SIM800L sont pilotés en direct.
+Phase 1 — Alimentation, continuité, câblage
+1.1 Alimentation (règle n°1 : masses communes)
+Module
+Tension
+Source
+Remarque
+ESP32
+5 V USB
+PC / powerbank
+MPU6050, GY-NEO6MV2
+3,3 V
+broche 3V3
+MQ2, LM35
+5 V
+broche VIN
+MQ2 : chauffage ≈ 150 mA ; LM35 exige ≥ 4 V
+SIM800L
+3,7–4,2 V, pics 2 A
+alimentation dédiée (LiPo ou buck réglé à 4,0 V / 2 A) + condensateur 1000 µF
+Ne jamais l'alimenter par l'ESP32. Antenne obligatoire
+Toutes les masses (ESP32, SIM800L, capteurs, alimentation SIM) sont reliées ensemble.
+1.2 Brochage
+Module
+Broche module
+ESP32
+Note
+MPU6050
+SDA / SCL
+GPIO21 / GPIO22
+AD0 → GND (adresse 0x68)
+GY-NEO6MV2
+TX / RX
+GPIO16 / GPIO17
+TX module → RX ESP32 (croisé)
+SIM800L
+TX
+GPIO26
+SIM800L
+RX
+GPIO27
+diviseur : 1 kΩ en série + 2,2 kΩ vers GND
+SIM800L
+RST
+GPIO25
+MQ2
+AO
+GPIO34
+diviseur : 10 kΩ en série + 20 kΩ vers GND (5 V → 3,3 V)
+LM35
+Vout
+GPIO32
+condensateur 100 nF Vout–GND ; TO-92 face plate vers soi : +Vs, Vout, GND
+LED RGB (4 br.)
+R / V / B
+GPIO18 / 19 / 23
+220 Ω par couleur ; la broche la plus longue → GND
+Buzzer (2 br.)
++ / −
+GPIO4 / GND
+si > 20 mA : transistor 2N2222 + 1 kΩ
+Bouton (option)
+GPIO14 → GND
+INPUT_PULLUP
+Les GPIO34 et GPIO32 sont sur ADC1 (compatibles Wi-Fi). Les GPIO12 et GPIO0 sont évités (broches de démarrage).
+1.3 Continuité (multimètre hors tension, mode bip)
+Chaque fil du tableau 1.2 : bip entre la broche module et la broche ESP32.
+GND module ↔ GND ESP32 pour chaque module : bip.
+3V3 ↔ GND, 5V ↔ GND, VIN SIM ↔ GND : aucun bip (pas de court-circuit).
+TX ↔ RX non croisés : aucun bip entre deux broches de même sens.
+1.4 Tensions attendues (sous tension, sans code)
+Point
+Valeur attendue
+3V3 ESP32
+3,25–3,35 V
+VIN (5 V)
+4,7–5,2 V
+VCC SIM800L
+3,8–4,2 V, stable pendant l'enregistrement réseau
+MPU6050 VCC / GPS VCC
+3,3 V
+LM35 Vout
+≈ 0,2–0,35 V (20–35 °C)
+Point milieu diviseur MQ2
+≤ 3,3 V
+Porte de sortie : tout est conforme, sinon on ne passe pas à la phase 2.
+Phase 2 — Bus I2C et UART
+Pas de SPI dans ce projet. On teste d'abord le bus, sans logique applicative.
+2.1 Scanner I2C (attendu : 0x68)
+#include <Wire.h>void setup() {  Serial.begin(115200);  Wire.begin(21, 22);  Wire.setClock(100000);  delay(500);  int n = 0;  for (uint8_t a = 1; a < 127; a++) {    Wire.beginTransmission(a);    if (Wire.endTransmission() == 0) {      Serial.print("Trouve: 0x");      Serial.println(a, HEX);      n++;    }  }  Serial.print(n);  Serial.println(" peripherique(s). Attendu: 0x68 (MPU6050)");}void loop() {}
+Rien trouvé → SDA/SCL inversés, 3V3 absent, ou module HS. 0x69 → AD0 relié au 3V3.
+2.2 Passerelle UART (GPS ou SIM800L)
+Sérial Monitor : 115200 bauds, fin de ligne « NL et CR ».
+#include <Arduino.h>#define TARGET_SIM 0   // 0 = GPS (16/17), 1 = SIM800L (26/27)HardwareSerial dev(1);void setup() {  Serial.begin(115200);#if TARGET_SIM  dev.begin(9600, SERIAL_8N1, 26, 27);#else  dev.begin(9600, SERIAL_8N1, 16, 17);#endif  Serial.println("Passerelle prete");}void loop() {  while (dev.available()) Serial.write(dev.read());  while (Serial.available()) dev.write(Serial.read());}
+Cible
+Test
+Résultat attendu
+GPS
+rien à taper
+lignes $GPGGA, $GPRMC… toutes les secondes (fix non requis)
+SIM800L
+taper AT
+OK
+SIM800L
+AT+CPIN?
++CPIN: READY (carte SIM sans code PIN)
+SIM800L
+AT+CREG?
++CREG: 0,1 ou 0,5 (enregistré)
+SIM800L
+AT+CSQ
++CSQ: 10..31 (99 = pas de signal)
+GPS muet → inverser TX/RX. SIM800L muet → alimentation (phase 1.1), RX sans diviseur, ou antenne absente. Vérifier la couverture 2G (GSM 900/1800).
+Porte de sortie : 0x68 trouvé, NMEA reçu, OK du SIM800L.
+Phase 3 — Code minimal : banc de test par module
+Menu série : 1 MPU6050, 2 LM35, 3 MQ2, 4 GPS, 5 LED + buzzer, 6 SIM800L (AT), 7 SMS de test. Remplacer le numéro de TEST_NUMBER.
+// BANC DE TEST - Phase 3#include <Arduino.h>#include <Wire.h>#include <TinyGPSPlus.h>#include <stdarg.h>HardwareSerial gpsSerial(2), simSerial(1);TinyGPSPlus gps;const int PIN_SDA = 21, PIN_SCL = 22, PIN_GPS_RX = 16, PIN_GPS_TX = 17;const int PIN_SIM_RX = 26, PIN_SIM_TX = 27, PIN_MQ2 = 34, PIN_LM35 = 32;const int PIN_R = 18, PIN_G = 19, PIN_B = 23, PIN_BUZ = 4;const int LED_ON = HIGH;                 // LOW si anode communeconst char* TEST_NUMBER = "+216XXXXXXXX";void P(const char* f, ...) {  char b[200];  va_list a; va_start(a, f); vsnprintf(b, sizeof b, f, a); va_end(a);  Serial.print("[T+"); Serial.print(millis() / 1000.0, 3); Serial.print("] "); Serial.println(b);}void menu() {  Serial.println();  Serial.println("1=MPU6050 2=LM35 3=MQ2 4=GPS 5=LED+buzzer 6=SIM800L(AT) 7=SMS test");}void tMpu() {  Wire.begin(PIN_SDA, PIN_SCL);  Wire.beginTransmission(0x68); Wire.write(0x6B); Wire.write(0);  if (Wire.endTransmission() != 0) { P("MPU KO: pas d'ACK 0x68 (Phase 2)"); return; }  Wire.beginTransmission(0x68); Wire.write(0x1C); Wire.write(0x10); Wire.endTransmission();   // +-8 g  for (int n = 0; n < 25; n++) {    Wire.beginTransmission(0x68); Wire.write(0x3B); Wire.endTransmission(false);    Wire.requestFrom((uint8_t)0x68, (uint8_t)14);    int16_t r[7];    for (int i = 0; i < 7; i++) { uint8_t h = Wire.read(); uint8_t l = Wire.read(); r[i] = (int16_t)((h << 8) | l); }    float ax = r[0] / 4096.0f, ay = r[1] / 4096.0f, az = r[2] / 4096.0f;    float g = sqrtf(ax * ax + ay * ay + az * az);    P("acc=%.2f %.2f %.2f |a|=%.2f g  gyr=%.0f %.0f %.0f dps  puce=%.1f C", ax, ay, az, g, r[4] / 131.0f, r[5] / 131.0f, r[6] / 131.0f, r[3] / 340.0f + 36.53f);    delay(200);  }  P("Attendu: |a| = 1.00 g +-0.1 a l'arret ; gyr < 5 dps ; puce 20-45 C");}void tLm35() {  analogSetPinAttenuation(PIN_LM35, ADC_6db);  for (int n = 0; n < 20; n++) {    uint32_t s = 0;    for (int i = 0; i < 32; i++) { s += analogReadMilliVolts(PIN_LM35); delay(1); }    float mv = s / 32.0f;    P("LM35 %.0f mV -> %.1f C", mv, mv / 10.0f);    delay(500);  }  P("Attendu: 200-350 mV (20-35 C). Doigt sur le capteur: +3 a +8 C en 30 s");}void tMq2() {  analogSetPinAttenuation(PIN_MQ2, ADC_11db);  for (int n = 0; n < 20; n++) {    uint32_t s = 0;    for (int i = 0; i < 32; i++) { s += analogReadMilliVolts(PIN_MQ2); delay(1); }    P("MQ2 AO(apres diviseur) = %lu mV", (unsigned long)(s / 32));    delay(500);  }  P("Attendu: valeur stable 100-1500 mV apres prechauffage ; monte de plusieurs centaines de mV avec du gaz de briquet (non allume)");}void tGps() {  gpsSerial.begin(9600, SERIAL_8N1, PIN_GPS_RX, PIN_GPS_TX);  uint32_t t0 = millis(), last = 0, chars = 0;  while (millis() - t0 < 60000) {    while (gpsSerial.available()) { gps.encode(gpsSerial.read()); chars++; }    if (millis() - last >= 2000) {      last = millis();      P("octets=%lu phrases_ok=%lu crc_ko=%lu sats=%d fix=%s", (unsigned long)chars, (unsigned long)gps.passedChecksum(), (unsigned long)gps.failedChecksum(), (int)gps.satellites.value(), gps.location.isValid() ? "OUI" : "non");      if (gps.location.isValid()) P("lat=%.6f lon=%.6f hdop=%.1f", gps.location.lat(), gps.location.lng(), gps.hdop.hdop());    }  }  if (chars == 0) P("AUCUN octet: TX/RX inverses ? alim 3V3 ? (Phase 2)");  else P("Fix a l'exterieur: 30 s a 2 min (demarrage a froid). Attendu: sats >= 4");}void setRgb(bool r, bool g, bool b) {  digitalWrite(PIN_R, r ? LED_ON : (LED_ON ^ 1));  digitalWrite(PIN_G, g ? LED_ON : (LED_ON ^ 1));  digitalWrite(PIN_B, b ? LED_ON : (LED_ON ^ 1));}void tIo() {  pinMode(PIN_R, OUTPUT); pinMode(PIN_G, OUTPUT); pinMode(PIN_B, OUTPUT); pinMode(PIN_BUZ, OUTPUT);  P("Rouge");  setRgb(1, 0, 0); delay(700);  P("Vert");   setRgb(0, 1, 0); delay(700);  P("Bleu");   setRgb(0, 0, 1); delay(700);  P("Jaune (R+V)"); setRgb(1, 1, 0); delay(700);  setRgb(0, 0, 0);  P("Buzzer: 3 bips");  for (int i = 0; i < 3; i++) { digitalWrite(PIN_BUZ, HIGH); delay(200); digitalWrite(PIN_BUZ, LOW); delay(300); }}void at(const char* c) {  while (simSerial.available()) simSerial.read();  P("> %s", c);  simSerial.println(c);  uint32_t t0 = millis(); String r;  while (millis() - t0 < 1500) while (simSerial.available()) r += (char)simSerial.read();  r.trim();  P("< %s", r.c_str());}void tSim() {  simSerial.begin(9600, SERIAL_8N1, PIN_SIM_RX, PIN_SIM_TX);  for (int i = 0; i < 3; i++) at("AT");  at("ATE0"); at("AT+CPIN?"); at("AT+CREG?"); at("AT+CSQ"); at("AT+COPS?");  P("Attendu: OK / +CPIN: READY / +CREG: 0,1 ou 0,5 / +CSQ: 10..31");}void tSms() {  simSerial.begin(9600, SERIAL_8N1, PIN_SIM_RX, PIN_SIM_TX);  at("AT+CMGF=1");  simSerial.print("AT+CMGS="); simSerial.print('"'); simSerial.print(TEST_NUMBER); simSerial.println('"');  delay(1500);  simSerial.print("Test SentinelBand"); simSerial.write(26);  uint32_t t0 = millis(); String r;  while (millis() - t0 < 20000) {    while (simSerial.available()) r += (char)simSerial.read();    if (r.indexOf("+CMGS") >= 0) break;  }  if (r.indexOf("+CMGS") >= 0) P("SMS envoye");  else P("SMS ECHEC: %s", r.c_str());}void setup() { Serial.begin(115200); delay(500); menu(); }void loop() {  if (!Serial.available()) return;  char c = Serial.read();  if (c < '1' || c > '7') return;  switch (c) {    case '1': tMpu(); break;    case '2': tLm35(); break;    case '3': tMq2(); break;    case '4': tGps(); break;    case '5': tIo(); break;    case '6': tSim(); break;    case '7': tSms(); break;  }  menu();}
+Valeurs plausibles (référence pour les phases 3 à 5)
+Mesure
+Au repos
+Plage valide (sinon capteur déclaré en défaut)
+Seuil jaune
+Seuil rouge
+Accélération |a|
+1,00 g ± 0,1
+0–8 g
+impact > 2,5 g puis immobilité
+—
+Gyroscope
+< 5 °/s
+0–250 °/s
+immobile si < 20 °/s
+—
+Température LM35
+20–35 °C
+0–120 °C
+≥ 45 °C
+≥ 60 °C
+Gaz MQ2 (écart à la ligne de base)
+± 50 mV
+20–3200 mV
+≥ +300 mV
+≥ +800 mV
+GPS
+≥ 4 satellites, HDOP < 3
+lat/lon cohérentes avec le lieu de test
+—
+—
+SIM800L
++CREG: 0,1/5, CSQ 10–31
+—
+—
+Porte de sortie : les six tests donnent des valeurs de ce tableau.
+Phase 4 — Intégration : firmware complet
+Ordre de mise en service : (1) téléverser avec SIM800L et GPS débranchés : MPU, capteurs, LED et buzzer doivent fonctionner seuls ; (2) brancher le GPS ; (3) brancher le SIM800L (alimentation dédiée) ; (4) tester le tableau de bord. Les modules absents sont signalés dans le journal sans bloquer le système.
+Logique : NORMAL (LED verte) → JAUNE (LED jaune clignotante + bips, annulable) → ROUGE (LED rouge rapide + buzzer + SMS avec position GPS). Le passage à ROUGE a lieu si l'alerte jaune n'est pas annulée dans le délai, ou immédiatement pour un gaz ou une température critiques. Si les conditions disparaissent (le travailleur bouge), le système revient seul à NORMAL.
+Commandes série (démonstration) : f impact simulé · t 65 °C · T 50 °C · g gaz +900 mV · G gaz +400 mV · n retour aux capteurs réels · c annuler.
+Renseigner PHONE_COLLEAGUE et PHONE_SUPERVISOR. DEMO_MODE 0 donne les délais réels.
+// SentinelBand v1.0 - ESP32 NodeMCU DevKit - Arduino IDE 2.x// Bibliotheque requise : TinyGPSPlus (Mikal Hart)#include <Arduino.h>#include <Wire.h>#include <TinyGPSPlus.h>#include <WiFi.h>#include <WebServer.h>#include <stdarg.h>// ===== CONFIGURATION =====#define DEMO_MODE         1   // 1 = delais courts (demo) ; 0 = delais reels#define ENABLE_DASHBOARD  1   // 1 = page web locale (Wi-Fi AP)#define LED_ACTIVE_HIGH   1   // 1 = cathode commune ; 0 = anode commune#define PHONE_COLLEAGUE   "+216XXXXXXXX"#define PHONE_SUPERVISOR  "+216YYYYYYYY"// ===== BROCHES =====const int PIN_SDA = 21, PIN_SCL = 22;const int PIN_GPS_RX = 16, PIN_GPS_TX = 17;const int PIN_SIM_RX = 26, PIN_SIM_TX = 27, PIN_SIM_RST = 25;const int PIN_MQ2 = 34, PIN_LM35 = 32;const int PIN_LED_R = 18, PIN_LED_G = 19, PIN_LED_B = 23;const int PIN_BUZZER = 4, PIN_BTN = 14;// ===== SEUILS ET DELAIS =====#if DEMO_MODEconst uint32_t STILL_AFTER_FALL_MS = 5000, IMMOBILE_MS = 20000, YELLOW_TIMEOUT_MS = 15000, MQ2_WARMUP_S = 30;#elseconst uint32_t STILL_AFTER_FALL_MS = 15000, IMMOBILE_MS = 120000, YELLOW_TIMEOUT_MS = 30000, MQ2_WARMUP_S = 180;#endifconst uint32_t FALL_WINDOW_MS = 30000, CANCEL_HOLDOFF_MS = 15000, SMS_REPEAT_MS = 60000, LOG_MS = 1000;const float IMPACT_G = 2.5f, STILL_GYRO_DPS = 20.0f, STILL_G_BAND = 0.15f;const float TEMP_YELLOW = 45.0f, TEMP_RED = 60.0f;const int GAS_YELLOW_DELTA = 300, GAS_RED_DELTA = 800;   // mV au-dessus de la ligne de base// ===== ETAT GLOBAL =====enum State { NORMAL, YELLOW, RED };State state = NORMAL;HardwareSerial gpsSerial(2), simSerial(1);TinyGPSPlus gps;WebServer server(80);float ax, ay, az, gx, gy, gz, accG = 1.0f, gyroDps = 0, tempC = 25.0f;int gasMv = 0, gasBase = 0;bool imuOk = false, tempOk = true, gasOk = true, simReady = false, fallArmed = false;uint32_t stillSince = 0, impactAt = 0, yellowAt = 0, nextSms = 0, lastLog = 0, lastImu = 0, lastEnv = 0, cancelUntil = 0;String reason = "";float simTemp = NAN;      // valeurs injectees par commandes serieint simGas = -1;bool simFall = false;const char* stateName(State s) { return s == NORMAL ? "NORMAL" : (s == YELLOW ? "JAUNE" : "ROUGE"); }// ===== JOURNAL HORODATE =====String ts() {  char b[48];  uint32_t t = millis();  snprintf(b, sizeof b, "[T+%06lu.%03lu]", (unsigned long)(t / 1000), (unsigned long)(t % 1000));  String s = b;  if (gps.date.isValid() && gps.time.isValid() && gps.date.year() > 2020) {    snprintf(b, sizeof b, "[%04d-%02d-%02dT%02d:%02d:%02dZ]", gps.date.year(), gps.date.month(), gps.date.day(), gps.time.hour(), gps.time.minute(), gps.time.second());    s += b;  }  return s;}void logLine(const char* fmt, ...) {  char b[220];  va_list a; va_start(a, fmt); vsnprintf(b, sizeof b, fmt, a); va_end(a);  Serial.print(ts()); Serial.print(' '); Serial.println(b);}// ===== SORTIES : LED RGB + BUZZER =====void setLed(bool r, bool g, bool b) {  digitalWrite(PIN_LED_R, (r ? 1 : 0) ^ (LED_ACTIVE_HIGH ? 0 : 1));  digitalWrite(PIN_LED_G, (g ? 1 : 0) ^ (LED_ACTIVE_HIGH ? 0 : 1));  digitalWrite(PIN_LED_B, (b ? 1 : 0) ^ (LED_ACTIVE_HIGH ? 0 : 1));}void updateOutputs() {  uint32_t t = millis();  bool buz = false;  if (state == NORMAL) {    setLed(false, true, false);  } else if (state == YELLOW) {    bool on = ((t / 500) % 2) == 0;    setLed(on, on, false);    buz = (t % 1000) < 150;  } else {    bool on = ((t / 250) % 2) == 0;    setLed(on, false, false);    buz = on;  }  digitalWrite(PIN_BUZZER, buz);}void feedGps() { while (gpsSerial.available()) gps.encode(gpsSerial.read()); }// ===== CAPTEURS =====bool imuInit() {  Wire.begin(PIN_SDA, PIN_SCL);  Wire.setClock(100000);  Wire.beginTransmission(0x68); Wire.write(0x6B); Wire.write(0x00);  if (Wire.endTransmission() != 0) return false;  Wire.beginTransmission(0x68); Wire.write(0x1C); Wire.write(0x10); Wire.endTransmission();   // +-8 g  Wire.beginTransmission(0x68); Wire.write(0x1B); Wire.write(0x00); Wire.endTransmission();   // +-250 dps  return true;}bool imuRead() {  Wire.beginTransmission(0x68); Wire.write(0x3B);  if (Wire.endTransmission(false) != 0) return false;  if (Wire.requestFrom((uint8_t)0x68, (uint8_t)14) != 14) return false;  int16_t r[7];  for (int i = 0; i < 7; i++) { uint8_t h = Wire.read(); uint8_t l = Wire.read(); r[i] = (int16_t)((h << 8) | l); }  ax = r[0] / 4096.0f; ay = r[1] / 4096.0f; az = r[2] / 4096.0f;  gx = r[4] / 131.0f;  gy = r[5] / 131.0f;  gz = r[6] / 131.0f;  accG = sqrtf(ax * ax + ay * ay + az * az);  gyroDps = sqrtf(gx * gx + gy * gy + gz * gz);  return true;}int readMv(int pin) {  uint32_t s = 0;  for (int i = 0; i < 32; i++) { s += analogReadMilliVolts(pin); delayMicroseconds(200); }  return (int)(s / 32);}void readSensors() {  uint32_t now = millis();  if (now - lastImu >= 20) {            // 50 Hz    lastImu = now;    imuOk = imuRead();    if (imuOk) {      if (simFall) { accG = 3.2f; simFall = false; }      bool still = gyroDps < STILL_GYRO_DPS && fabsf(accG - 1.0f) < STILL_G_BAND;      if (!still) stillSince = now;      if (accG > IMPACT_G) { impactAt = now; fallArmed = true; stillSince = now; logLine("IMPACT %.2f g", accG); }    } else {      stillSince = now;                 // capteur absent : pas de fausse alerte d'immobilite    }  }  if (now - lastEnv >= 500) {           // 2 Hz    lastEnv = now;    tempC = isnan(simTemp) ? readMv(PIN_LM35) / 10.0f : simTemp;    gasMv = (simGas >= 0) ? simGas : readMv(PIN_MQ2);    tempOk = (tempC >= 0 && tempC <= 120);    gasOk = (gasMv > 20 && gasMv < 3200);  }}// ===== SIM800L =====String simRead(uint32_t ms, const char* expect) {  String r;  uint32_t t0 = millis();  while (millis() - t0 < ms) {    while (simSerial.available()) r += (char)simSerial.read();    if (expect != nullptr && r.indexOf(expect) >= 0) break;    updateOutputs(); feedGps(); delay(5);  }  return r;}bool simCmd(const char* cmd, const char* expect, uint32_t ms) {  while (simSerial.available()) simSerial.read();  simSerial.println(cmd);  String r = simRead(ms, expect);  bool ok = r.indexOf(expect) >= 0;  logLine("SIM %s -> %s", cmd, ok ? "OK" : "ECHEC");  return ok;}bool simInit() {  simSerial.begin(9600, SERIAL_8N1, PIN_SIM_RX, PIN_SIM_TX);  pinMode(PIN_SIM_RST, OUTPUT); digitalWrite(PIN_SIM_RST, HIGH);  bool alive = false;  for (int i = 0; i < 5 && !alive; i++) alive = simCmd("AT", "OK", 1000);  if (!alive) { logLine("SIM800L ABSENT (alimentation / cablage, voir Phase 2)"); return false; }  simCmd("ATE0", "OK", 1000);  simCmd("AT+CMGF=1", "OK", 1000);  bool reg = false;  for (int i = 0; i < 15 && !reg; i++) {    while (simSerial.available()) simSerial.read();    simSerial.println("AT+CREG?");    String r = simRead(1000, "OK");    reg = (r.indexOf(",1") >= 0 || r.indexOf(",5") >= 0);    if (!reg) delay(1000);  }  logLine("SIM reseau %s", reg ? "ENREGISTRE" : "NON ENREGISTRE");  return reg;}bool sendSms(const char* num, const String& msg) {  while (simSerial.available()) simSerial.read();  simSerial.print("AT+CMGS="); simSerial.print('"'); simSerial.print(num); simSerial.println('"');  String r = simRead(5000, ">");  if (r.indexOf('>') < 0) { logLine("SMS %s : pas d'invite '>'", num); simSerial.write(27); return false; }  simSerial.print(msg);  simSerial.write(26);  r = simRead(30000, "+CMGS:");  bool ok = r.indexOf("+CMGS:") >= 0;  logLine("SMS vers %s : %s", num, ok ? "ENVOYE" : "ECHEC");  return ok;}String buildMsg() {  String m = String("SENTINELBAND ALERTE ROUGE: ") + reason;  if (gps.location.isValid()) m += String(" Pos: https://maps.google.com/?q=") + String(gps.location.lat(), 6) + "," + String(gps.location.lng(), 6);  else m += " Pos: GPS sans fix";  m += String(" T=") + String(tempC, 1) + "C Gaz+" + String(gasMv - gasBase) + "mV";  return m;}bool sendAlert() {  String m = buildMsg();  logLine("ALERTE ROUGE -> %s", m.c_str());  if (!simReady) simReady = simInit();  if (!simReady) { logLine("Envoi impossible : SIM800L indisponible, nouvel essai dans 10 s"); return false; }  bool a = sendSms(PHONE_COLLEAGUE, m);  bool b = sendSms(PHONE_SUPERVISOR, m);  return a || b;}// ===== DECISION =====void enter(State s, const String& why) {  state = s; reason = why;  if (s == YELLOW) yellowAt = millis();  if (s == RED) nextSms = millis();  logLine("ETAT -> %s (%s)", stateName(s), why.c_str());}void cancelAlert() {  if (state == NORMAL) return;  logLine("ANNULATION confirmee (bouton ou commande c)");  state = NORMAL; cancelUntil = millis() + CANCEL_HOLDOFF_MS;  fallArmed = false; stillSince = millis();}void evaluate() {  uint32_t now = millis();  if (fallArmed && now - impactAt > FALL_WINDOW_MS) fallArmed = false;  int gd = gasOk ? gasMv - gasBase : 0;  int hy = (state == YELLOW) ? 50 : 0;          // hysteresis  float th = (state == YELLOW) ? 1.0f : 0.0f;  bool fall  = fallArmed && (now - stillSince) >= STILL_AFTER_FALL_MS;  bool immob = (now - stillSince) >= IMMOBILE_MS;  bool gasY = gd >= GAS_YELLOW_DELTA - hy, gasR = gd >= GAS_RED_DELTA;  bool tY = tempOk && tempC >= TEMP_YELLOW - th, tR = tempOk && tempC >= TEMP_RED;  bool anyY = fall || immob || gasY || tY;  const char* why = fall ? "CHUTE+IMMOBILITE" : (immob ? "IMMOBILITE" : (gasY ? "GAZ" : "TEMPERATURE"));  if (state == NORMAL) {    if (gasR || tR) enter(RED, gasR ? "GAZ_CRITIQUE" : "TEMP_CRITIQUE");    else if (now >= cancelUntil && anyY) enter(YELLOW, why);  } else if (state == YELLOW) {    if (gasR || tR) enter(RED, gasR ? "GAZ_CRITIQUE" : "TEMP_CRITIQUE");    else if (!anyY) { logLine("Situation annulee (conditions disparues)"); state = NORMAL; }    else if (now - yellowAt >= YELLOW_TIMEOUT_MS) enter(RED, String("NON_CONFIRME_") + reason);  }}void runAlerts() {  if (state == RED && (int32_t)(millis() - nextSms) >= 0) {    bool ok = sendAlert();    nextSms = millis() + (ok ? SMS_REPEAT_MS : 10000UL);  }}void checkButton() {  static uint32_t lowSince = 0;  static bool fired = false;  if (digitalRead(PIN_BTN) == LOW) {    if (!lowSince) lowSince = millis();    if (!fired && millis() - lowSince > 50) { fired = true; cancelAlert(); }  } else { lowSince = 0; fired = false; }}void checkSerial() {  while (Serial.available()) {    char c = Serial.read();    if (c == 'c') cancelAlert();    else if (c == 'f') { simFall = true; logLine("SIM: impact injecte"); }    else if (c == 't') { simTemp = 65; logLine("SIM: temperature 65 C"); }    else if (c == 'T') { simTemp = 50; logLine("SIM: temperature 50 C"); }    else if (c == 'g') { simGas = gasBase + 900; logLine("SIM: gaz +900 mV"); }    else if (c == 'G') { simGas = gasBase + 400; logLine("SIM: gaz +400 mV"); }    else if (c == 'n') { simTemp = NAN; simGas = -1; logLine("SIM: retour aux capteurs reels"); }  }}// ===== TABLEAU DE BORD (Wi-Fi AP : SentinelBand / sentinel123 -> http://192.168.4.1) =====#if ENABLE_DASHBOARDconst char PAGE[] PROGMEM = "<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>SentinelBand</title><body style='font-family:sans-serif;text-align:center'><h1>SentinelBand</h1><h2 id=s>-</h2><pre id=d></pre><script>async function u(){try{const j=await (await fetch('/data')).json();s.textContent=j.state;s.style.color={NORMAL:'green',JAUNE:'orange',ROUGE:'red'}[j.state];d.textContent=JSON.stringify(j,null,1)}catch(e){}}setInterval(u,1000);u()</script>";String kv(const char* k, const String& v, bool isStr) {  String s = String('"') + k + '"' + ':';  if (isStr) s += String('"') + v + '"'; else s += v;  return s;}void setupDash() {  WiFi.mode(WIFI_AP);  WiFi.softAP("SentinelBand", "sentinel123");  server.on("/", []() { server.send_P(200, "text/html", PAGE); });  server.on("/data", []() {    String j = "{" + kv("state", stateName(state), true) + "," + kv("reason", reason, true) + "," + kv("temp_c", String(tempC, 1), false) + "," + kv("gas_delta_mv", String(gasMv - gasBase), false) + "," + kv("acc_g", String(accG, 2), false) + "," + kv("gps_fix", gps.location.isValid() ? "true" : "false", false) + "," + kv("uptime_s", String(millis() / 1000), false) + "}";    server.send(200, "application/json", j);  });  server.begin();  logLine("Dashboard : http://%s/", WiFi.softAPIP().toString().c_str());}#endifvoid logStatus() {  logLine("%s acc=%.2fg gyr=%.0fdps T=%.1fC gaz=%dmV(+%d) gps=%s sats=%d imu=%s src=%s", stateName(state), accG, gyroDps, tempC, gasMv, gasMv - gasBase, gps.location.isValid() ? "FIX" : "NOFIX", (int)gps.satellites.value(), imuOk ? "ok" : "KO", (!isnan(simTemp) || simGas >= 0) ? "SIM" : "REEL");  if (gps.location.isValid()) logLine("   pos=%.6f,%.6f", gps.location.lat(), gps.location.lng());}void setup() {  Serial.begin(115200);  delay(500);  pinMode(PIN_LED_R, OUTPUT); pinMode(PIN_LED_G, OUTPUT); pinMode(PIN_LED_B, OUTPUT);  pinMode(PIN_BUZZER, OUTPUT); pinMode(PIN_BTN, INPUT_PULLUP);  analogSetAttenuation(ADC_11db);  analogSetPinAttenuation(PIN_LM35, ADC_6db);  gpsSerial.begin(9600, SERIAL_8N1, PIN_GPS_RX, PIN_GPS_TX);  logLine("=== SentinelBand demarrage (DEMO_MODE=%d) ===", DEMO_MODE);  imuOk = imuInit();  logLine("MPU6050 %s", imuOk ? "OK" : "ABSENT (verifier I2C, Phase 2)");  setLed(false, false, true);  logLine("Prechauffage MQ2 : %u s (LED bleue)", (unsigned)MQ2_WARMUP_S);  for (uint32_t i = 0; i < MQ2_WARMUP_S; i++) {    uint32_t t0 = millis();    while (millis() - t0 < 1000) { feedGps(); delay(5); }    if (i % 5 == 4) logLine("  MQ2 = %d mV", readMv(PIN_MQ2));  }  long s = 0;  for (int i = 0; i < 20; i++) { s += readMv(PIN_MQ2); delay(100); }  gasBase = (int)(s / 20);  logLine("Ligne de base gaz = %d mV", gasBase);  simReady = simInit();#if ENABLE_DASHBOARD  setupDash();#endif  stillSince = millis();  logLine("=== SYSTEME PRET : etat NORMAL ===");}void loop() {  feedGps();  readSensors();  checkButton();  checkSerial();  evaluate();  runAlerts();  updateOutputs();#if ENABLE_DASHBOARD  server.handleClient();#endif  if (millis() - lastLog >= LOG_MS) { lastLog = millis(); logStatus(); }}
+Notes : l'envoi d'un SMS dure 5 à 30 s ; pendant ce temps LED et buzzer restent animés, mais la détection est suspendue (acceptable car l'état est déjà ROUGE). Le Wi-Fi et le SIM800L sont sur des alimentations séparées pour éviter les redémarrages (brownout).
+Porte de sortie : le journal affiche une ligne par seconde, sans redémarrage, avec imu=ok.
+Phase 5 — Validation et preuves
+5.1 Scénarios de test
+#
+Action
+Résultat attendu dans le journal
+Sorties
+S1
+Laisser tourner 60 s
+1 ligne/s, état NORMAL, valeurs du tableau « plausibles »
+LED verte
+S2
+Envoyer f (ou chute douce du boîtier puis immobile)
+IMPACT, puis ETAT -> JAUNE (CHUTE+IMMOBILITE) après 5 s d'immobilité
+LED jaune + bips
+S3
+Bouger le boîtier pendant le jaune
+Situation annulee (conditions disparues)
+retour vert
+S4
+Jaune puis ne rien faire 15 s
+ETAT -> ROUGE (NON_CONFIRME_...), SMS ... ENVOYE ×2
+LED rouge + buzzer
+S5
+Jaune puis bouton (ou c)
+ANNULATION confirmee
+retour vert
+S6
+G
+ETAT -> JAUNE (GAZ) puis ROUGE après 15 s
+S7
+g ou gaz de briquet non allumé près du MQ2
+ETAT -> ROUGE (GAZ_CRITIQUE) + SMS
+S8
+T puis t
+JAUNE (TEMPERATURE) puis ROUGE (TEMP_CRITIQUE)
+S9
+n puis c
+SIM: retour aux capteurs reels
+S10
+Débrancher le MPU6050
+imu=KO, aucune fausse alerte
+S11
+Débrancher le SIM800L pendant un ROUGE
+Envoi impossible ..., nouvel essai toutes les 10 s
+S12
+Se connecter au Wi-Fi SentinelBand (mot de passe sentinel123), ouvrir http://192.168.4.1
+l'état et les valeurs se mettent à jour chaque seconde
+Les scénarios S6 à S9 utilisent des valeurs injectées : le journal l'indique (src=SIM). Pour la preuve « capteur réel », refaire S2, S7 (gaz de briquet) et la montée en température du LM35 (doigt dessus) en src=REEL.
+5.2 Journal série horodaté (preuve)
+Option A : copier la console de l'Arduino IDE. Option B : enregistrer automatiquement avec l'heure du PC (Python, pip install pyserial, adapter le port) :
+import serial, datetimes = serial.Serial('COM5', 115200, timeout=1)with open('journal_sentinelband.txt', 'a', encoding='utf-8') as f:    while True:        l = s.readline().decode('utf-8', 'ignore').rstrip()        if l:            line = datetime.datetime.now().isoformat(timespec='milliseconds') + ' ' + l            print(line)            f.write(line + chr(10))            f.flush()
+Format des lignes (exemple de forme, pas un enregistrement réel) :
+[T+000123.456] NORMAL acc=1.01g gyr=2dps T=27.3C gaz=412mV(+8) gps=FIX sats=7 imu=ok src=REEL[T+000130.020] IMPACT 3.20 g[T+000135.040] ETAT -> JAUNE (CHUTE+IMMOBILITE)[T+000150.060] ETAT -> ROUGE (NON_CONFIRME_CHUTE+IMMOBILITE)[T+000168.900] SMS vers +216XXXXXXXX : ENVOYE
+5.3 Check-list du livrable
+Schéma de câblage et photo du montage (phase 1).
+Captures : scanner I2C (0x68), passerelle UART (NMEA, OK, +CREG) (phase 2).
+Sortie du banc de test pour les 6 modules (phase 3).
+Journal de S1 à S12, avec au moins S2, S4, S7 et une capture du SMS reçu (phase 5).
+Capture du tableau de bord et vidéo courte LED + buzzer.
+5.4 Dépannage rapide (ordre du protocole)
+Symptôme
+Cause probable
+Action
+ESP32 redémarre en boucle
+SIM800L sur l'alimentation ESP32, Wi-Fi + pic de courant
+Alimentation dédiée + 1000 µF (phase 1)
+MPU6050 ABSENT
+SDA/SCL inversés, pas de 3V3, soudure
+Scanner I2C ; continuité
+imu=KO intermittent
+fil long ou mauvais contact
+raccourcir, souder
+GPS : octets=0
+TX/RX non croisés
+inverser
+GPS : octets mais fix=non
+intérieur
+sortir à ciel ouvert, attendre 2 min
+SIM : aucune réponse
+alimentation < 3,8 V, RX sans diviseur
+mesurer VCC pendant l'enregistrement
+SIM : +CREG: 0,2 ou 0,0
+recherche réseau, antenne, pas de 2G
+antenne, SIM avec crédit, couverture GSM
+SMS ... pas d'invite
+mode texte non activé ou SIM verrouillée
+AT+CMGF=1, désactiver le PIN
+LM35 affiche > 100 °C ou 0
+Vout/GND inversés, LM35 alimenté en 3,3 V
+vérifier l'ordre des broches, alimenter en 5 V
+MQ2 saturé (> 3200 mV)
+pas de diviseur, préchauffage insuffisant
+diviseur 10 kΩ / 20 kΩ, attendre le préchauffage
+LED : couleurs inversées
+anode commune
+LED_ACTIVE_HIGH 0
+Fausses alertes jaunes
+seuils trop bas, bruit
+augmenter IMMOBILE_MS, GAS_YELLOW_DELTA, recalibrer la ligne de base

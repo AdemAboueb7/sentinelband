@@ -1,0 +1,316 @@
+
+=== PAGE 1 ===
+Cahier des charges du rapport technique 
+Finalité du livrable 
+Le livrable doit prendre la forme d’un rapport scientifique, et non d’un simple compte rendu de projet. Il 
+doit permettre d’identifier clairement : le problème traité, la contribution technique, les méthodes 
+reproductibles, les résultats quantitatifs, les limites et les éléments suffisamment solides pour une publication. 
+Précaution scientifique essentielle 
+le rapport doit séparer deux axes expérimentaux : 
+1. Validation de l’antenne textile : simulation CST et mesure du coefficient de réflexion S11 au VNA. 
+2. Validation du prototype wearable  : capteurs, algorithme embarqué, actionneur, transmission et 
+interface utilisant l’antenne interne de l’ESP. 
+Format demandé 
+• Rapport principal : 10 à 15 pages hors annexes. 
+• Format de préparation : une colonne pour faciliter la correction. 
+• Annexes : Simulations CST, schémas, extraits de code, nomenclature et protocoles détaillés. 
+• Dépôt : PDF, fichiers CST , mesure VNA, code source, images originales et courte vidéo de 
+démonstration. 
+Structure détaillée 
+Page de garde 
+La page de garde du rapport pédagogique contient : 
+• titre scientifique du travail ; 
+• nom du projet wearable ; 
+• noms et rôles des étudiants ; 
+• encadrante ; 
+• formation et année universitaire ; 
+• version et date du document ; 
+• lien vers le dépôt contenant le code et les données. 
+Le titre doit être précis, concis et descriptif. Éviter les formulations vagues comme « Conception d’un 
+système intelligent » et les termes promotionnels comme « révolutionnaire », « très performant » ou « novel 
+» sans preuve. 
+Résumé 
+Le résumé sera rédigé en dernier, en un seul paragraphe de 150 à 220 mots. Un résumé autonome, sans 
+référence, note, équation ni abréviation non définie, résumant le projet, les conclusions et leur portée. 
+Il doit répondre dans cet ordre à cinq questions : 
+=== PAGE 2 ===
+1. Quel problème wearable est traité ? 
+2. Quelle solution a été développée ? 
+3. Comment l’antenne et le prototype ont-ils été évalués ? 
+4. Quels sont les principaux résultats quantitatifs ? 
+5. Quelle conclusion peut être tirée sans exagération ? 
+Mots-clés 
+Ajouter 4 à 6 mots-clés techniques, par exemple : 
+• Wearable technology 
+• Textile antenna 
+• Flexible antenna 
+• Vector network analyzer 
+• ESP32 
+• Wireless body area network 
+Choisir uniquement les termes réellement représentés dans le rapport.  
+I. Introduction 
+Longueur recommandée : 1 à 1,5 page dans le rapport. 
+A. Contexte 
+Présenter : 
+• le développement des systèmes wearables ; 
+• le domaine ciblé : santé, sport, sécurité, assistance ou industrie ; 
+• le rôle des capteurs, du traitement embarqué et de la communication ; 
+• l’intérêt des antennes flexibles ou textiles pour les communications portées. 
+B. Problème scientifique 
+Formuler une difficulté précise. 
+C. Limite des travaux existants 
+Présenter une synthèse de 5 à 10 articles récents.  
+D. Contribution du travail 
+Terminer l’introduction par un paragraphe explicite : 
+The main contributions of this work are: 1) …; 2) …; and 3) … 
+Contributions possibles, uniquement si elles sont démontrées : 
+• conception et optimisation CST d’une antenne textile à 2,45 GHz ; 
+• développement d’un prototype wearable ESP32 intégrant capteurs, décision et alerte ; 
+• protocole expérimental reproductible à faible coût. 
+=== PAGE 3 ===
+La contribution ne doit pas annoncer une liaison entre l’antenne textile et l’ESP si cette liaison n’a pas été 
+réalisée. 
+II. Spécifications et architecture 
+A. Scénario d’usage 
+Décrire une situation précise : utilisateur, environnement, événement détecté, donnée acquise, décision prise, 
+alerte produite et destinataire. Ajouter un diagramme de séquence ou un schéma « utilisateur–capteur–ESP–
+interface ». 
+B. Exigences 
+Présenter un tableau vérifiable : 
+Exigence Cible Justification Méthode de 
+vérification 
+Résultat 
+Fréquence de 
+fonctionnement 
+2,45 GHz Bande ISM VNA  
+Adaptation S11 inférieur à -10 
+dB 
+Critère retenu VNA  
+Acquisition capteur  Besoin 
+applicatif 
+Test comparatif  
+Temps de réponse  Sécurité/usage Horodatage  
+Portée ou connectivité 
+ESP 
+ Scénario Test système  
+Autonomie estimée  Portabilité Courant et calcul  
+ 
+C. Architecture fonctionnelle 
+Fournir une figure claire montrant : 
+• grandeur physique ; 
+• capteur ; 
+• acquisition ; 
+• traitement ou décision ; 
+• actionneur/alerte ; 
+• transmission ; 
+• application ou tableau de bord ; 
+• alimentation. 
+ 
+=== PAGE 4 ===
+L’antenne textile doit apparaître dans un bloc « antenne étudiée et caractérisée », distinct du chemin radio 
+effectif de l’ESP si elle n’y est pas connectée. Une note sous la figure précise que le prototype communique 
+à l’aide de l’antenne interne de l’ESP. 
+D. Choix des composants 
+Pour chaque composant, justifier le choix par rapport aux alternatives : plage, précision, tension, courant, 
+interface, dimensions, disponibilité et prix. Ajouter la nomenclature : 
+Composant Référence Fonction Interface Alimentation Quantité 
+Microcontrôleur ESP32/ESP32-CAM     
+Capteur      
+Actionneur      
+Batterie/alimentation      
+ 
+III. Conception de l’antenne 
+A. Cahier des charges RF 
+Préciser : 
+• fréquence centrale et bande visée ; 
+• polarisation prévue ; 
+• type d’antenne : microruban, CPW ou autre ; 
+• dimensions maximales ; 
+• conditions d’utilisation : plane, courbée, proche du corps ; 
+• impédance de référence de 50 ohms ; 
+• critère d’adaptation choisi. 
+B. Matériaux 
+Présenter les propriétés utilisées dans CST : 
+Élément Matériau Épaisseur Permittivité Tangente de pertes Conductivité 
+Substrat     — 
+Patch/plan de masse   — —  
+ 
+Toute valeur issue d’un article ou d’une fiche technique doit être référencée. Si la permittivité réelle n’a pas 
+été mesurée, le préciser explicitement, car cette incertitude peut expliquer un écart entre simulation et mesure. 
+C. Géométrie 
+Fournir : 
+• vue annotée de l’antenne ; 
+=== PAGE 5 ===
+• toutes les dimensions ; 
+• position du port ; 
+• type d’alimentation ; 
+• photographies de la face avant et arrière du prototype ; 
+• description du connecteur et de sa fixation. 
+D. Modèle CST 
+Décrire suffisamment le modèle pour permettre sa reproduction : 
+• conditions aux limites ; 
+• type et impédance du port ; 
+• matériaux ; 
+ 
+V. Méthodes expérimentales 
+A. Mesure S11 
+Documenter : 
+• modèle du VNA ; 
+• plage fréquentielle ; 
+• kit de calibration ; 
+• calibration 1-port SOL ; 
+• câble et adaptateurs ; 
+• format d’exportation ; 
+• position de l’antenne et éloignement des objets métalliques. 
+Une calibration au plan de connexion du dispositif sous test est indispensable pour réduire l’influence 
+systématique du câble et des adaptateurs. 
+B. Conditions textiles 
+Mesurer au minimum : 
+• antenne plane en espace libre ; 
+• antenne courbée sur un support non conducteur de rayon connu ; 
+• éventuellement antenne proche du corps, en documentant emplacement, distance, orientation et 
+posture. 
+D. Tests du prototype ESP 
+Cette partie concerne uniquement le système wearable utilisant l’antenne interne de l’ESP. Décrire : 
+• procédure de calibration ou de vérification du capteur ; 
+• scénarios normaux et anormaux ; 
+=== PAGE 6 ===
+• valeurs d’entrée ; 
+• seuils ; 
+• sortie attendue ; 
+• temps de réponse ; 
+• succès/échec de transmission ; 
+ 
+Le RSSI Wi-Fi peut éventuellement être relevé pour documenter la qualité de la liaison du prototype ESP, 
+mais il ne doit jamais être attribué à l’antenne textile non connectée. Espressif fournit des fonctions de scan 
+et de lecture du niveau reçu pour surveiller une liaison Wi-Fi. 
+VI. Résultats 
+Cette section présente les observations sans les mélanger immédiatement avec de longues explications. 
+A. Résultats simulés 
+Figures minimales : 
+• S11 simulé ; 
+• gain réalisé à la fréquence cible ; 
+• diagrammes E-plane et H-plane ; 
+• distribution du courant surfacique ; 
+• éventuellement efficacité et directivité. 
+Tableau minimal : 
+Configuration Fréquence de 
+résonance 
+S11 
+minimal 
+Bande à -
+10 dB 
+Gain 
+réalisé 
+Directivité Efficacité 
+Simulation 
+finale 
+      
+ 
+NB : Ne pas confondre gain et directivité.  
+B. Résultats VNA 
+Superposer sur une même figure lisible : 
+• simulation ; 
+• mesure plane ; 
+• mesure courbée ; 
+• mesure proche du corps, si réalisée. 
+Condition Fréquence de 
+résonance 
+S11 
+minimal 
+Limite 
+basse 
+Limite 
+haute 
+Bande 
+CST      
+Plane      
+=== PAGE 7 ===
+Courbée, rayon = …      
+Proche du corps      
+ 
+Calculer : 
+Δ𝑓𝑟 = 𝑓𝑟,𝑚𝑒𝑠 − 𝑓𝑟,𝑠𝑖𝑚 
+et : 
+Δ𝑓𝑟(%) = 𝑓𝑟,𝑚𝑒𝑠 − 𝑓𝑟,𝑠𝑖𝑚
+𝑓𝑟,𝑠𝑖𝑚
+× 100 
+VII. Discussion 
+A. Prototype wearable 
+Discuter : 
+• fiabilité du capteur ; 
+• pertinence des seuils ; 
+• latence ; 
+• faux déclenchements ; 
+• ergonomie ; 
+• consommation ; 
+• sécurité et confidentialité ; 
+• comportement en cas de perte de connexion. 
+B. Limites 
+Inclure obligatoirement : 
+• antenne textile non reliée au chemin RF de l’ESP ; 
+• absence éventuelle de mesure du gain, de l’efficacité et du diagramme ; 
+• propriétés électromagnétiques des textiles non mesurées ; 
+• nombre limité d’échantillons ; 
+• essais on-body limités ou absents ; 
+• autonomie estimée plutôt que mesurée ; 
+• environnement radio non contrôlé. 
+Reconnaître ces limites augmente la crédibilité du travail et permet de formuler correctement les 
+perspectives. 
+VIII. Conclusion 
+Longueur recommandée : 150 à 250 mots. 
+La conclusion doit : 
+• rappeler l’objectif ; 
+=== PAGE 8 ===
+• indiquer ce qui a réellement été conçu et réalisé ; 
+• reprendre deux à quatre résultats quantitatifs ; 
+• répondre à la question posée dans l’introduction ; 
+• citer les principales limites ; 
+• proposer deux perspectives réalistes. 
+ 
+Perspectives possibles : connexion de l’antenne textile à un module ESP à sortie RF externe, caractérisation 
+du gain et de l’efficacité, étude on-body contrôlée, mesure de SAR, intégration mécanique, miniaturisation  
+Références 
+Utiliser des références directement liées au travail et privilégier : 
+• articles IEEE récents ; 
+• articles sur les antennes textiles à la même fréquence ; 
+• références de mesure VNA ; 
+• fiches techniques officielles des composants ; 
+• documentation officielle CST et Espressif. 
+Annexes obligatoires 
+Annexe A — Dimensions CST 
+Tableau complet de toutes les dimensions et noms des paramètres. 
+Annexe B — Données brutes 
+• captures brutes ; 
+• fichiers CST ; 
+• tableau des mesures répétées ; 
+• calculs de fréquence et de bande. 
+Annexe C — Prototype embarqué 
+• schéma électrique ; 
+• brochage ; 
+• nomenclature ; 
+• organigramme ; 
+• lien vers le code ; 
+• version des bibliothèques. 
+ 
+Figures obligatoires 
+=== PAGE 9 ===
+Chaque groupe devra fournir au minimum : 
+1. architecture globale du système ; 
+2. géométrie cotée de l’antenne ; 
+3. modèle CST et conditions de simulation ; 
+4. photographie du prototype d’antenne ; 
+5. photographie du prototype wearable ; 
+6. résultats fonctionnels ou chronogramme. 
+Critères d’évaluation 
+Critère Pondération 
+Problématique, état de l’art et contribution 15% 
+Architecture et justification des choix 10% 
+Reproductibilité de la conception CST 15% 
+Qualité de la fabrication et du protocole VNA 15% 
+Résultats quantitatifs et traçabilité 15% 
+Fonctionnement du prototype wearable 10% 
+Discussion critique et comparaison 15% 
+Qualité scientifique, figures et références 5% 
+ 
+ 

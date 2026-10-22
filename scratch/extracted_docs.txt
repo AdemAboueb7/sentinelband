@@ -1,0 +1,1034 @@
+
+--- Page 1 ---
+Cahier des charges du rapport technique 
+Finalité du livrable 
+Le livrable doit prendre la forme d’un rapport scientifique, et non d’un simple compte rendu de projet. Il 
+doit permettre d’identifier clairement : le problème traité, la contribution technique, les méthodes 
+reproductibles, les résultats quantitatifs, les limites et les éléments suffisamment solides pour une publication. 
+Précaution scientifique essentielle 
+le rapport doit séparer deux axes expérimentaux : 
+1. Validation de l’antenne textile : simulation CST et mesure du coefficient de réflexion S11 au VNA. 
+2. Validation du prototype wearable  : capteurs, algorithme embarqué, actionneur, transmission et 
+interface utilisant l’antenne interne de l’ESP. 
+Format demandé 
+• Rapport principal : 10 à 15 pages hors annexes. 
+• Format de préparation : une colonne pour faciliter la correction. 
+• Annexes : Simulations CST, schémas, extraits de code, nomenclature et protocoles détaillés. 
+• Dépôt : PDF, fichiers CST , mesure VNA, code source, images originales et courte vidéo de 
+démonstration. 
+Structure détaillée 
+Page de garde 
+La page de garde du rapport pédagogique contient : 
+• titre scientifique du travail ; 
+• nom du projet wearable ; 
+• noms et rôles des étudiants ; 
+• encadrante ; 
+• formation et année universitaire ; 
+• version et date du document ; 
+• lien vers le dépôt contenant le code et les données. 
+Le titre doit être précis, concis et descriptif. Éviter les formulations vagues comme « Conception d’un 
+système intelligent » et les termes promotionnels comme « révolutionnaire », « très performant » ou « novel 
+» sans preuve. 
+Résumé 
+Le résumé sera rédigé en dernier, en un seul paragraphe de 150 à 220 mots. Un résumé autonome, sans 
+référence, note, équation ni abréviation non définie, résumant le projet, les conclusions et leur portée. 
+Il doit répondre dans cet ordre à cinq questions : 
+--- Page 2 ---
+1. Quel problème wearable est traité ? 
+2. Quelle solution a été développée ? 
+3. Comment l’antenne et le prototype ont-ils été évalués ? 
+4. Quels sont les principaux résultats quantitatifs ? 
+5. Quelle conclusion peut être tirée sans exagération ? 
+Mots-clés 
+Ajouter 4 à 6 mots-clés techniques, par exemple : 
+• Wearable technology 
+• Textile antenna 
+• Flexible antenna 
+• Vector network analyzer 
+• ESP32 
+• Wireless body area network 
+Choisir uniquement les termes réellement représentés dans le rapport.  
+I. Introduction 
+Longueur recommandée : 1 à 1,5 page dans le rapport. 
+A. Contexte 
+Présenter : 
+• le développement des systèmes wearables ; 
+• le domaine ciblé : santé, sport, sécurité, assistance ou industrie ; 
+• le rôle des capteurs, du traitement embarqué et de la communication ; 
+• l’intérêt des antennes flexibles ou textiles pour les communications portées. 
+B. Problème scientifique 
+Formuler une difficulté précise. 
+C. Limite des travaux existants 
+Présenter une synthèse de 5 à 10 articles récents.  
+D. Contribution du travail 
+Terminer l’introduction par un paragraphe explicite : 
+The main contributions of this work are: 1) …; 2) …; and 3) … 
+Contributions possibles, uniquement si elles sont démontrées : 
+• conception et optimisation CST d’une antenne textile à 2,45 GHz ; 
+• développement d’un prototype wearable ESP32 intégrant capteurs, décision et alerte ; 
+• protocole expérimental reproductible à faible coût. 
+--- Page 3 ---
+La contribution ne doit pas annoncer une liaison entre l’antenne textile et l’ESP si cette liaison n’a pas été 
+réalisée. 
+II. Spécifications et architecture 
+A. Scénario d’usage 
+Décrire une situation précise : utilisateur, environnement, événement détecté, donnée acquise, décision prise, 
+alerte produite et destinataire. Ajouter un diagramme de séquence ou un schéma « utilisateur–capteur–ESP–
+interface ». 
+B. Exigences 
+Présenter un tableau vérifiable : 
+Exigence Cible Justification Méthode de 
+vérification 
+Résultat 
+Fréquence de 
+fonctionnement 
+2,45 GHz Bande ISM VNA  
+Adaptation S11 inférieur à -10 
+dB 
+Critère retenu VNA  
+Acquisition capteur  Besoin 
+applicatif 
+Test comparatif  
+Temps de réponse  Sécurité/usage Horodatage  
+Portée ou connectivité 
+ESP 
+ Scénario Test système  
+Autonomie estimée  Portabilité Courant et calcul  
+ 
+C. Architecture fonctionnelle 
+Fournir une figure claire montrant : 
+• grandeur physique ; 
+• capteur ; 
+• acquisition ; 
+• traitement ou décision ; 
+• actionneur/alerte ; 
+• transmission ; 
+• application ou tableau de bord ; 
+• alimentation. 
+ 
+--- Page 4 ---
+L’antenne textile doit apparaître dans un bloc « antenne étudiée et caractérisée », distinct du chemin radio 
+effectif de l’ESP si elle n’y est pas connectée. Une note sous la figure précise que le prototype communique 
+à l’aide de l’antenne interne de l’ESP. 
+D. Choix des composants 
+Pour chaque composant, justifier le choix par rapport aux alternatives : plage, précision, tension, courant, 
+interface, dimensions, disponibilité et prix. Ajouter la nomenclature : 
+Composant Référence Fonction Interface Alimentation Quantité 
+Microcontrôleur ESP32/ESP32-CAM     
+Capteur      
+Actionneur      
+Batterie/alimentation      
+ 
+III. Conception de l’antenne 
+A. Cahier des charges RF 
+Préciser : 
+• fréquence centrale et bande visée ; 
+• polarisation prévue ; 
+• type d’antenne : microruban, CPW ou autre ; 
+• dimensions maximales ; 
+• conditions d’utilisation : plane, courbée, proche du corps ; 
+• impédance de référence de 50 ohms ; 
+• critère d’adaptation choisi. 
+B. Matériaux 
+Présenter les propriétés utilisées dans CST : 
+Élément Matériau Épaisseur Permittivité Tangente de pertes Conductivité 
+Substrat     — 
+Patch/plan de masse   — —  
+ 
+Toute valeur issue d’un article ou d’une fiche technique doit être référencée. Si la permittivité réelle n’a pas 
+été mesurée, le préciser explicitement, car cette incertitude peut expliquer un écart entre simulation et mesure. 
+C. Géométrie 
+Fournir : 
+• vue annotée de l’antenne ; 
+--- Page 5 ---
+• toutes les dimensions ; 
+• position du port ; 
+• type d’alimentation ; 
+• photographies de la face avant et arrière du prototype ; 
+• description du connecteur et de sa fixation. 
+D. Modèle CST 
+Décrire suffisamment le modèle pour permettre sa reproduction : 
+• conditions aux limites ; 
+• type et impédance du port ; 
+• matériaux ; 
+ 
+V. Méthodes expérimentales 
+A. Mesure S11 
+Documenter : 
+• modèle du VNA ; 
+• plage fréquentielle ; 
+• kit de calibration ; 
+• calibration 1-port SOL ; 
+• câble et adaptateurs ; 
+• format d’exportation ; 
+• position de l’antenne et éloignement des objets métalliques. 
+Une calibration au plan de connexion du dispositif sous test est indispensable pour réduire l’influence 
+systématique du câble et des adaptateurs. 
+B. Conditions textiles 
+Mesurer au minimum : 
+• antenne plane en espace libre ; 
+• antenne courbée sur un support non conducteur de rayon connu ; 
+• éventuellement antenne proche du corps, en documentant emplacement, distance, orientation et 
+posture. 
+D. Tests du prototype ESP 
+Cette partie concerne uniquement le système wearable utilisant l’antenne interne de l’ESP. Décrire : 
+• procédure de calibration ou de vérification du capteur ; 
+• scénarios normaux et anormaux ; 
+--- Page 6 ---
+• valeurs d’entrée ; 
+• seuils ; 
+• sortie attendue ; 
+• temps de réponse ; 
+• succès/échec de transmission ; 
+ 
+Le RSSI Wi-Fi peut éventuellement être relevé pour documenter la qualité de la liaison du prototype ESP, 
+mais il ne doit jamais être attribué à l’antenne textile non connectée. Espressif fournit des fonctions de scan 
+et de lecture du niveau reçu pour surveiller une liaison Wi-Fi. 
+VI. Résultats 
+Cette section présente les observations sans les mélanger immédiatement avec de longues explications. 
+A. Résultats simulés 
+Figures minimales : 
+• S11 simulé ; 
+• gain réalisé à la fréquence cible ; 
+• diagrammes E-plane et H-plane ; 
+• distribution du courant surfacique ; 
+• éventuellement efficacité et directivité. 
+Tableau minimal : 
+Configuration Fréquence de 
+résonance 
+S11 
+minimal 
+Bande à -
+10 dB 
+Gain 
+réalisé 
+Directivité Efficacité 
+Simulation 
+finale 
+      
+ 
+NB : Ne pas confondre gain et directivité.  
+B. Résultats VNA 
+Superposer sur une même figure lisible : 
+• simulation ; 
+• mesure plane ; 
+• mesure courbée ; 
+• mesure proche du corps, si réalisée. 
+Condition Fréquence de 
+résonance 
+S11 
+minimal 
+Limite 
+basse 
+Limite 
+haute 
+Bande 
+CST      
+Plane      
+--- Page 7 ---
+Courbée, rayon = …      
+Proche du corps      
+ 
+Calculer : 
+Δ𝑓𝑟 = 𝑓𝑟,𝑚𝑒𝑠 − 𝑓𝑟,𝑠𝑖𝑚 
+et : 
+Δ𝑓𝑟(%) = 𝑓𝑟,𝑚𝑒𝑠 − 𝑓𝑟,𝑠𝑖𝑚
+𝑓𝑟,𝑠𝑖𝑚
+× 100 
+VII. Discussion 
+A. Prototype wearable 
+Discuter : 
+• fiabilité du capteur ; 
+• pertinence des seuils ; 
+• latence ; 
+• faux déclenchements ; 
+• ergonomie ; 
+• consommation ; 
+• sécurité et confidentialité ; 
+• comportement en cas de perte de connexion. 
+B. Limites 
+Inclure obligatoirement : 
+• antenne textile non reliée au chemin RF de l’ESP ; 
+• absence éventuelle de mesure du gain, de l’efficacité et du diagramme ; 
+• propriétés électromagnétiques des textiles non mesurées ; 
+• nombre limité d’échantillons ; 
+• essais on-body limités ou absents ; 
+• autonomie estimée plutôt que mesurée ; 
+• environnement radio non contrôlé. 
+Reconnaître ces limites augmente la crédibilité du travail et permet de formuler correctement les 
+perspectives. 
+VIII. Conclusion 
+Longueur recommandée : 150 à 250 mots. 
+La conclusion doit : 
+• rappeler l’objectif ; 
+--- Page 8 ---
+• indiquer ce qui a réellement été conçu et réalisé ; 
+• reprendre deux à quatre résultats quantitatifs ; 
+• répondre à la question posée dans l’introduction ; 
+• citer les principales limites ; 
+• proposer deux perspectives réalistes. 
+ 
+Perspectives possibles : connexion de l’antenne textile à un module ESP à sortie RF externe, caractérisation 
+du gain et de l’efficacité, étude on-body contrôlée, mesure de SAR, intégration mécanique, miniaturisation  
+Références 
+Utiliser des références directement liées au travail et privilégier : 
+• articles IEEE récents ; 
+• articles sur les antennes textiles à la même fréquence ; 
+• références de mesure VNA ; 
+• fiches techniques officielles des composants ; 
+• documentation officielle CST et Espressif. 
+Annexes obligatoires 
+Annexe A — Dimensions CST 
+Tableau complet de toutes les dimensions et noms des paramètres. 
+Annexe B — Données brutes 
+• captures brutes ; 
+• fichiers CST ; 
+• tableau des mesures répétées ; 
+• calculs de fréquence et de bande. 
+Annexe C — Prototype embarqué 
+• schéma électrique ; 
+• brochage ; 
+• nomenclature ; 
+• organigramme ; 
+• lien vers le code ; 
+• version des bibliothèques. 
+ 
+Figures obligatoires 
+--- Page 9 ---
+Chaque groupe devra fournir au minimum : 
+1. architecture globale du système ; 
+2. géométrie cotée de l’antenne ; 
+3. modèle CST et conditions de simulation ; 
+4. photographie du prototype d’antenne ; 
+5. photographie du prototype wearable ; 
+6. résultats fonctionnels ou chronogramme. 
+Critères d’évaluation 
+Critère Pondération 
+Problématique, état de l’art et contribution 15% 
+Architecture et justification des choix 10% 
+Reproductibilité de la conception CST 15% 
+Qualité de la fabrication et du protocole VNA 15% 
+Résultats quantitatifs et traçabilité 15% 
+Fonctionnement du prototype wearable 10% 
+Discussion critique et comparaison 15% 
+Qualité scientifique, figures et références 5% 
+ 
+ 
+
+RENDU  de la séance 5 
+ABOUEB Adem
+L’imedance :
+S11 :
+Gain :
+Directivité :
+
+Séance2 : Les capteurs portables
+Corps
+→⌁Capteur
+→▥ Donnée
+→✓ Décision
+11Année Universitaire 2026-2027
+1
+1
+Votre concept devient une architecture de mesure
+Le besoinUtilisateur et contexteProblème concret à résoudreLe besoinUtilisateur et contexteProblème concret à résoudreLe wearableLocalisation corporelleService et valeur attendueLe wearableLocalisation corporelleService et valeur attendueLe défi du jourQuelles données mesurer ?Comment les rendre fiables ?Le défi du jourQuelles données mesurer ?Comment les rendre fiables ?Question : quelle donnée devez-vous mesurer pour démontrer que votre solution apporte réellement de la valeur ?Question : quelle donnée devez-vous mesurer pour démontrer que votre solution apporte réellement de la valeur ?Sondage chat / Forms • 2 minSondage chat / Forms • 2 minRÉACTIVATIONRÉACTIVATIONVous avez déjà défini…
+Le besoin
+Utilisateur et contexte
+Problème concret à résoudre
+Le besoin
+Utilisateur et contexte
+Problème concret à résoudre
+Le wearable
+Localisation corporelle
+Service et valeur attendue
+Le wearable
+Localisation corporelle
+Service et valeur attendue
+Le défi du jour
+Quelles données mesurer ?
+Comment les rendre fiables ?
+Le défi du jour
+Quelles données mesurer ?
+Comment les rendre fiables ?
+Question : quelle donnée devez-vous mesurer pour démontrer que votre solution apporte réellement de la valeur ?
+Question : quelle donnée devez-vous mesurer pour démontrer que votre solution apporte réellement de la valeur ?
+Sondage chat / Forms • 2 min
+Sondage chat / Forms • 2 min
+RÉACTIVATION
+RÉACTIVATION
+À la fin de cette séance, vous saurez sélectionner et justifier des capteurs
+OBJECTIFSComprendreDéfinir un capteur portableDistinguer grandeur, signal, donnée et informationOBJECTIFSComprendreDéfinir un capteur portableDistinguer grandeur, signal, donnée et informationAnalyserChoisir selon besoin etplacementIdentifier bruit, dérive et artefactsAnalyserChoisir selon besoin etplacementIdentifier bruit, dérive et artefactsConcevoirConstruire la chaîne capteur →décisionExprimer un compromis mesurableConcevoirConstruire la chaîne capteur →décisionExprimer un compromis mesurable
+OBJECTIFS
+Comprendre
+Définir un capteur portable
+Distinguer grandeur, signal, donnée et information
+OBJECTIFS
+Comprendre
+Définir un capteur portable
+Distinguer grandeur, signal, donnée et information
+Analyser
+Choisir selon besoin et
+placement
+Identifier bruit, dérive et artefacts
+Analyser
+Choisir selon besoin et
+placement
+Identifier bruit, dérive et artefacts
+Concevoir
+Construire la chaîne capteur →
+décision
+Exprimer un compromis mesurable
+Concevoir
+Construire la chaîne capteur →
+décision
+Exprimer un compromis mesurable
+Livrable : Fiche « Capteurs s Décision » intégrée au projet de groupeLivrable : Fiche « Capteurs s Décision » intégrée au projet de groupe
+Livrable : Fiche « Capteurs s Décision » intégrée au projet de groupe
+Livrable : Fiche « Capteurs s Décision » intégrée au projet de groupe
+Que mesure-t-on vraiment ?
+VOTEVOTEVotez dans le chat : A, B ou C. Puis justifiez votre réponse
+VOTE
+VOTE
+Détecter une chuteDétecter une chuteA. Température cutanéeA. Température cutanéeB. Accélération + orientationB. Accélération + orientationC. Niveau sonoreC. Niveau sonoreSuivre l’intensité d’un effortSuivre l’intensité d’un effortA. Fréquence cardiaqueA. Fréquence cardiaqueB. Humidité ambianteB. Humidité ambianteC. GPS seulC. GPS seulÉvaluer la posture assiseÉvaluer la posture assiseA. Orientation du troncA. Orientation du troncB. SpO₂B. SpO₂C. LuminositéC. LuminositéAlerter face aux UVAlerter face aux UVA. Indice UV / lumièreA. Indice UV / lumièreB. ECGB. ECGC. Pression plantaireC. Pression plantaireQuestion de relance : une seule mesure suffit-elle toujours pour prendre une décision fiable ?Question de relance : une seule mesure suffit-elle toujours pour prendre une décision fiable ?
+Détecter une chute
+Détecter une chute
+A. Température cutanée
+A. Température cutanée
+B. Accélération + orientation
+B. Accélération + orientation
+C. Niveau sonore
+C. Niveau sonore
+Suivre l’intensité d’un effort
+Suivre l’intensité d’un effort
+A. Fréquence cardiaque
+A. Fréquence cardiaque
+B. Humidité ambiante
+B. Humidité ambiante
+C. GPS seul
+C. GPS seul
+Évaluer la posture assise
+Évaluer la posture assise
+A. Orientation du tronc
+A. Orientation du tronc
+B. SpO₂
+B. SpO₂
+C. Luminosité
+C. Luminosité
+Alerter face aux UV
+Alerter face aux UV
+A. Indice UV / lumière
+A. Indice UV / lumière
+B. ECG
+B. ECG
+C. Pression plantaire
+C. Pression plantaire
+Question de relance : une seule mesure suffit-elle toujours pour prendre une décision fiable ?
+Question de relance : une seule mesure suffit-elle toujours pour prendre une décision fiable ?
+Du phénomène réel au service rendu à l’utilisateur
+CONCEPTCONCEPTUn capteur convertit une grandeur physique, chimique ou biologique en un signal exploitable par un système électronique.
+CONCEPT
+CONCEPT
+1Grandeur réelleMouvement, lumière, pression…1Grandeur réelleMouvement, lumière, pression…→3Signal électriqueTension, courant, impulsions→3Signal électriqueTension, courant, impulsions→4Donnée numériqueÉchantillons horodatés→4Donnée numériqueÉchantillons horodatés→5Information / actionAlerte, suivi, conseil→5Information / actionAlerte, suivi, conseil2
+1
+Grandeur réelle
+Mouvement, lumière, pression…
+1
+Grandeur réelle
+Mouvement, lumière, pression…
+→
+3
+Signal électrique
+Tension, courant, impulsions
+→
+3
+Signal électrique
+Tension, courant, impulsions
+→
+4
+Donnée numérique
+Échantillons horodatés
+→
+4
+Donnée numérique
+Échantillons horodatés
+→
+5
+Information / action
+Alerte, suivi, conseil
+→
+5
+Information / action
+Alerte, suivi, conseil
+→Capteur
+Transduction
+Exemple : courseMouvement du poignet → accéléromètre → signal sur 3 axes → filtrage → détection de pas → estimation de cadence.Exemple : courseMouvement du poignet → accéléromètre → signal sur 3 axes → filtrage → détection de pas → estimation de cadence.
+Exemple : course
+Mouvement du poignet → accéléromètre → signal sur 3 axes → filtrage → détection de pas → estimation de cadence.
+Exemple : course
+Mouvement du poignet → accéléromètre → signal sur 3 axes → filtrage → détection de pas → estimation de cadence.
+Idée clé : la donnée brute n’est pas encore une information utile.
+Choisir la famille en fonction du besoin, pas de la mode
+CARTOGRAPHIEInertielsMouvement,orientationAccéléromètre • gyroscope • IMUPas, chute, postureCARTOGRAPHIEInertielsMouvement,orientationAccéléromètre • gyroscope • IMUPas, chute, posturePhysiologiquesRéponse du corpsPPG • ECG • SpO₂ • EMGCardio, sommeil,rééducationPhysiologiquesRéponse du corpsPPG • ECG • SpO₂ • EMGCardio, sommeil,rééducationEnvironnementauxMilieu ambiantUV • humidité • températureExposition, confort,sécuritéEnvironnementauxMilieu ambiantUV • humidité • températureExposition, confort,sécuritéContextuelsPosition et interactionGPS • micro • pressionActivité, localisation, assistanceContextuelsPosition et interactionGPS • micro • pressionActivité, localisation, assistance
+CARTOGRAPHIE
+Inertiels
+Mouvement,
+orientation
+Accéléromètre • gyroscope • IMU
+Pas, chute, posture
+CARTOGRAPHIE
+Inertiels
+Mouvement,
+orientation
+Accéléromètre • gyroscope • IMU
+Pas, chute, posture
+Physiologiques
+Réponse du corps
+PPG • ECG • SpO₂ • EMG
+Cardio, sommeil,
+rééducation
+Physiologiques
+Réponse du corps
+PPG • ECG • SpO₂ • EMG
+Cardio, sommeil,
+rééducation
+Environnementaux
+Milieu ambiant
+UV • humidité • température
+Exposition, confort,
+sécurité
+Environnementaux
+Milieu ambiant
+UV • humidité • température
+Exposition, confort,
+sécurité
+Contextuels
+Position et interaction
+GPS • micro • pression
+Activité, localisation, assistance
+Contextuels
+Position et interaction
+GPS • micro • pression
+Activité, localisation, assistance
+Défi flash : choisissez pour votre projet une famille prioritaire, une complémentaire et une que vous excluez — avec justification.Défi flash : choisissez pour votre projet une famille prioritaire, une complémentaire et une que vous excluez — avec justification.
+Défi flash : choisissez pour votre projet une famille prioritaire, une complémentaire et une que vous excluez — avec justification.
+Défi flash : choisissez pour votre projet une famille prioritaire, une complémentaire et une que vous excluez — avec justification.
+IMU : observer le mouvement, pas seulement compter les pas
+IMUAccéléromètreAccélération linéaireAxes x, y, zPas, impacts, vibrationsIMUAccéléromètreAccélération linéaireAxes x, y, zPas, impacts, vibrationsGyroscopeVitesse angulaireRotation du segment Geste, orientationGyroscopeVitesse angulaireRotation du segment Geste, orientationMagnétomètreChamp magnétiqueAide à l’orientation Cap et navigationMagnétomètreChamp magnétiqueAide à l’orientation Cap et navigationUne IMU regroupe souvent plusieurs de ces capteurs : 6 axes ou G axes.Une IMU regroupe souvent plusieurs de ces capteurs : 6 axes ou G axes.
+IMU
+Accéléromètre
+Accélération linéaire
+Axes x, y, z
+Pas, impacts, vibrations
+IMU
+Accéléromètre
+Accélération linéaire
+Axes x, y, z
+Pas, impacts, vibrations
+Gyroscope
+Vitesse angulaire
+Rotation du segment Geste, orientation
+Gyroscope
+Vitesse angulaire
+Rotation du segment Geste, orientation
+Magnétomètre
+Champ magnétique
+Aide à l’orientation Cap et navigation
+Magnétomètre
+Champ magnétique
+Aide à l’orientation Cap et navigation
+Une IMU regroupe souvent plusieurs de ces capteurs : 6 axes ou G axes.
+Une IMU regroupe souvent plusieurs de ces capteurs : 6 axes ou G axes.
+Question : où placeriez-vous une IMU pour analyser la posture d’un étudiant devant son ordinateur ?
+Pourquoi ?
+Même capteur, mesures et erreurs différentes
+ÉQUIPES • 8 MINÉQUIPES • 8 MINScénario : détecter une chute chez une personne âgée. Quel emplacement choisiriez-vous ?
+ÉQUIPES • 8 MIN
+ÉQUIPES • 8 MIN
+ChaussureBien placeeRiqsque d’oublieEcartéChaussureBien placeeRiqsque d’oublieEcartéBassin / ceintureProche de centre de masseConfort moyenMesure fiableBassin / ceintureProche de centre de masseConfort moyenMesure fiableEmplacementAvantageLimite / risqueVotre décisionPoignetDétection préciseMouvement de bras Faux negativeEmplacementAvantageLimite / risqueVotre décisionPoignetDétection préciseMouvement de bras Faux negativeRestitution : « Nous plaçons le capteur sur … car … ; nous acceptons le compromis … »Restitution : « Nous plaçons le capteur sur … car … ; nous acceptons le compromis … »
+Chaussure
+Bien placee
+Riqsque d’oublie
+Ecarté
+Chaussure
+Bien placee
+Riqsque d’oublie
+Ecarté
+Bassin / ceinture
+Proche de centre de masse
+Confort moyen
+Mesure fiable
+Bassin / ceinture
+Proche de centre de masse
+Confort moyen
+Mesure fiable
+Emplacement
+Avantage
+Limite / risque
+Votre décision
+Poignet
+Détection précise
+Mouvement de bras 
+Faux negative
+Emplacement
+Avantage
+Limite / risque
+Votre décision
+Poignet
+Détection précise
+Mouvement de bras 
+Faux negative
+Restitution : « Nous plaçons le capteur sur … car … ; nous acceptons le compromis … »
+Restitution : « Nous plaçons le capteur sur … car … ; nous acceptons le compromis … »
+GGFocus : les capteurs physiologiques
+G
+G
+Mesurer le corps est utile, mais exigeant
+SIGNAL BIOCapteurPPGVariations optiques du volume sanguinFréquence cardiaqueMouvement, lumière, contactPoint de vigilanceService possibleMesureSIGNAL BIOCapteurPPGVariations optiques du volume sanguinFréquence cardiaqueMouvement, lumière, contactPoint de vigilanceService possibleMesureECGActivité électrique cardiaqueRythme cardiaqueÉlectrodes, contact, artefactsECGActivité électrique cardiaqueRythme cardiaqueÉlectrodes, contact, artefactsSpO₂Estimation de saturation en oxygèneSuivi physiologiquePosition et mouvementSpO₂Estimation de saturation en oxygèneSuivi physiologiquePosition et mouvementTempérature cutanéeTempérature à la surface de la peauTendance, confort≠ température centraleTempérature cutanéeTempérature à la surface de la peauTendance, confort≠ température centraleEMG / GSRMuscle / conductance cutanéeGeste, réponse électrodermalePlacement et contexteEMG / GSRMuscle / conductance cutanéeGeste, réponse électrodermalePlacement et contexte
+SIGNAL BIO
+Capteur
+PPG
+Variations optiques du volume sanguin
+Fréquence cardiaque
+Mouvement, lumière, contact
+Point de vigilance
+Service possible
+Mesure
+SIGNAL BIO
+Capteur
+PPG
+Variations optiques du volume sanguin
+Fréquence cardiaque
+Mouvement, lumière, contact
+Point de vigilance
+Service possible
+Mesure
+ECG
+Activité électrique cardiaque
+Rythme cardiaque
+Électrodes, contact, artefacts
+ECG
+Activité électrique cardiaque
+Rythme cardiaque
+Électrodes, contact, artefacts
+SpO₂
+Estimation de saturation en oxygène
+Suivi physiologique
+Position et mouvement
+SpO₂
+Estimation de saturation en oxygène
+Suivi physiologique
+Position et mouvement
+Température cutanée
+Température à la surface de la peau
+Tendance, confort
+≠ température centrale
+Température cutanée
+Température à la surface de la peau
+Tendance, confort
+≠ température centrale
+EMG / GSR
+Muscle / conductance cutanée
+Geste, réponse électrodermale
+Placement et contexte
+EMG / GSR
+Muscle / conductance cutanée
+Geste, réponse électrodermale
+Placement et contexte
+Une mesure physiologique wearable est une estimation contextualisée, pas un diagnostic médical automatique.Une mesure physiologique wearable est une estimation contextualisée, pas un diagnostic médical automatique.
+Une mesure physiologique wearable est une estimation contextualisée, pas un diagnostic médical automatique.
+Une mesure physiologique wearable est une estimation contextualisée, pas un diagnostic médical automatique.
+1010Mini-lab : lire un signal
+10
+10
+Avant de croire une métrique, évaluez la qualité de la mesure
+BINÔMES • 5 MINSignal A∿ ∿ ∿ ∿Périodique • amplitude stableBINÔMES • 5 MINSignal A∿ ∿ ∿ ∿Périodique • amplitude stableSignal B⌁ ↑ ⌁ ↑Pics brusques • amplitude irrégulièreSignal B⌁ ↑ ⌁ ↑Pics brusques • amplitude irrégulièreSignal C⌁⌁⌁⌁⌁Dérive lente • bruit rapideSignal C⌁⌁⌁⌁⌁Dérive lente • bruit rapideAssociez chaque signal à une cause : mesure au repos de bonne qualité • mouvement • contact capteur-peauinstable.Puis proposez une action : filtrage • fixation • contrôle qualité • changement de placement • fusion de capteurs.Associez chaque signal à une cause : mesure au repos de bonne qualité • mouvement • contact capteur-peauinstable.Puis proposez une action : filtrage • fixation • contrôle qualité • changement de placement • fusion de capteurs.
+BINÔMES • 5 MIN
+Signal A
+∿ ∿ ∿ ∿
+Périodique • amplitude stable
+BINÔMES • 5 MIN
+Signal A
+∿ ∿ ∿ ∿
+Périodique • amplitude stable
+Signal B
+⌁ ↑ ⌁ ↑
+Pics brusques • amplitude irrégulière
+Signal B
+⌁ ↑ ⌁ ↑
+Pics brusques • amplitude irrégulière
+Signal C
+⌁⌁⌁⌁⌁
+Dérive lente • bruit rapide
+Signal C
+⌁⌁⌁⌁⌁
+Dérive lente • bruit rapide
+Associez chaque signal à une cause : mesure au repos de bonne qualité • mouvement • contact capteur-peau
+instable.
+Puis proposez une action : filtrage • fixation • contrôle qualité • changement de placement • fusion de capteurs.
+Associez chaque signal à une cause : mesure au repos de bonne qualité • mouvement • contact capteur-peau
+instable.
+Puis proposez une action : filtrage • fixation • contrôle qualité • changement de placement • fusion de capteurs.
+1111Du signal à la décision
+11
+11
+ActionAlerte • vibration • transmission→5Pics • énergie • variance • fréquenceCaractéristiq3ARCHITECTURE1AcquisitionÉchantillonnage • ADC • horodatage→2ues→→4InterprétationSeuil • règle • IA • anomaliePrétraitementFiltrage • calibration • normalisationActionAlerte • vibration • transmission→5Pics • énergie • variance • fréquenceCaractéristiq3ARCHITECTURE1AcquisitionÉchantillonnage • ADC • horodatage→2ues→→4InterprétationSeuil • règle • IA • anomaliePrétraitementFiltrage • calibration • normalisationUn pipeline embarqué rend la mesure exploitable
+Action
+Alerte • vibration • transmission
+→5
+Pics • énergie • variance • fréquence
+Caractéristiq
+3
+ARCHITECTURE
+1
+Acquisition
+Échantillonnage • ADC • horodatage
+→2
+ues
+→
+→4
+Interprétation
+Seuil • règle • IA • anomalie
+Prétraitement
+Filtrage • calibration • normalisation
+Action
+Alerte • vibration • transmission
+→5
+Pics • énergie • variance • fréquence
+Caractéristiq
+3
+ARCHITECTURE
+1
+Acquisition
+Échantillonnage • ADC • horodatage
+→2
+ues
+→
+→4
+Interprétation
+Seuil • règle • IA • anomalie
+Prétraitement
+Filtrage • calibration • normalisation
+Exemple : chuteIMU → fenêtre de données → pic d’accélération + changement d’orientation + immobilité → score de confiance→ confirmation utilisateur → alerte.Exemple : chuteIMU → fenêtre de données → pic d’accélération + changement d’orientation + immobilité → score de confiance→ confirmation utilisateur → alerte.
+Exemple : chute
+IMU → fenêtre de données → pic d’accélération + changement d’orientation + immobilité → score de confiance
+→ confirmation utilisateur → alerte.
+Exemple : chute
+IMU → fenêtre de données → pic d’accélération + changement d’orientation + immobilité → score de confiance
+→ confirmation utilisateur → alerte.
+Pourquoi une règle unique « accélération > seuil » produit-elle des faux positifs ?Pourquoi une règle unique « accélération > seuil » produit-elle des faux positifs ?
+Pourquoi une règle unique « accélération > seuil » produit-elle des faux positifs ?
+Pourquoi une règle unique « accélération > seuil » produit-elle des faux positifs ?
+1212Où traiter la donnée ?
+12
+12
+Edge, smartphone ou cloud : un choix de compromis
+DÉBATWearable / Edge+ Faible latence+ Fonctionne hors connexion– Calcul et énergie limitésAlerte immédiateDÉBATWearable / Edge+ Faible latence+ Fonctionne hors connexion– Calcul et énergie limitésAlerte immédiateSmartphone+ Calcul et interface+ Connectivité disponible– Dépend de la liaisonTableau de bordSmartphone+ Calcul et interface+ Connectivité disponible– Dépend de la liaisonTableau de bordCloud+ Historique et entraînement IA+ Analyse longue durée– Réseau et confidentialitéSuivi longitudinalCloud+ Historique et entraînement IA+ Analyse longue durée– Réseau et confidentialitéSuivi longitudinalVote argumenté : quelle décision de votre projet doit absolument rester locale ?Vote argumenté : quelle décision de votre projet doit absolument rester locale ?
+DÉBAT
+Wearable / Edge
++ Faible latence
++ Fonctionne hors connexion
+– Calcul et énergie limités
+Alerte immédiate
+DÉBAT
+Wearable / Edge
++ Faible latence
++ Fonctionne hors connexion
+– Calcul et énergie limités
+Alerte immédiate
+Smartphone
++ Calcul et interface
++ Connectivité disponible
+– Dépend de la liaison
+Tableau de bord
+Smartphone
++ Calcul et interface
++ Connectivité disponible
+– Dépend de la liaison
+Tableau de bord
+Cloud
++ Historique et entraînement IA
++ Analyse longue durée
+– Réseau et confidentialité
+Suivi longitudinal
+Cloud
++ Historique et entraînement IA
++ Analyse longue durée
+– Réseau et confidentialité
+Suivi longitudinal
+Vote argumenté : quelle décision de votre projet doit absolument rester locale ?
+Vote argumenté : quelle décision de votre projet doit absolument rester locale ?
+1313La contrainte énergie
+13
+13
+Mesurer coûte de l’énergie
+DÉFI • 5 MINCe qui consommeÉchantillonnageCapteurs actifs Calcul localRadio, écran, vibrationDÉFI • 5 MINCe qui consommeÉchantillonnageCapteurs actifs Calcul localRadio, écran, vibrationStratégiesMesure périodiqueDéclenchement sur événement Veille / réveilEnvoi de caractéristiquesStratégiesMesure périodiqueDéclenchement sur événement Veille / réveilEnvoi de caractéristiquesQuestion critiqueObjectif : 48 hQue risque-t-on de perdre ? Quelle donnée est prioritaire ?Question critiqueObjectif : 48 hQue risque-t-on de perdre ? Quelle donnée est prioritaire ?
+DÉFI • 5 MIN
+Ce qui consomme
+Échantillonnage
+Capteurs actifs Calcul local
+Radio, écran, vibration
+DÉFI • 5 MIN
+Ce qui consomme
+Échantillonnage
+Capteurs actifs Calcul local
+Radio, écran, vibration
+Stratégies
+Mesure périodique
+Déclenchement sur événement Veille / réveil
+Envoi de caractéristiques
+Stratégies
+Mesure périodique
+Déclenchement sur événement Veille / réveil
+Envoi de caractéristiques
+Question critique
+Objectif : 48 h
+Que risque-t-on de perdre ? Quelle donnée est prioritaire ?
+Question critique
+Objectif : 48 h
+Que risque-t-on de perdre ? Quelle donnée est prioritaire ?
+Choisissez une stratégie pour votre projet et écrivez dans le chat : « Nous économisons l’énergie en … ; le risque est …»Choisissez une stratégie pour votre projet et écrivez dans le chat : « Nous économisons l’énergie en … ; le risque est …»
+Choisissez une stratégie pour votre projet et écrivez dans le chat : « Nous économisons l’énergie en … ; le risque est …
+»
+Choisissez une stratégie pour votre projet et écrivez dans le chat : « Nous économisons l’énergie en … ; le risque est …
+»
+1414Fiabilité, confort et données responsables
+14
+14
+Un wearable utile doit être acceptable au quotidien
+CONTRAINTESQualité techniqueCalibration et dériveBruit et artefacts Synchronisation Tests réalistesCONTRAINTESQualité techniqueCalibration et dériveBruit et artefacts Synchronisation Tests réalistesQualité d’usageConfort et poidsContact peau / textile Sueur et lavage Recharge simpleQualité d’usageConfort et poidsContact peau / textile Sueur et lavage Recharge simpleDonnées responsablesMinimisationTransparence SécuritéConsentement utilisateurDonnées responsablesMinimisationTransparence SécuritéConsentement utilisateurQuestion : le fait de pouvoir mesurer une donnée signifie-t-il qu’il faut la collecter ?Question : le fait de pouvoir mesurer une donnée signifie-t-il qu’il faut la collecter ?
+CONTRAINTES
+Qualité technique
+Calibration et dérive
+Bruit et artefacts Synchronisation Tests réalistes
+CONTRAINTES
+Qualité technique
+Calibration et dérive
+Bruit et artefacts Synchronisation Tests réalistes
+Qualité d’usage
+Confort et poids
+Contact peau / textile Sueur et lavage Recharge simple
+Qualité d’usage
+Confort et poids
+Contact peau / textile Sueur et lavage Recharge simple
+Données responsables
+Minimisation
+Transparence Sécurité
+Consentement utilisateur
+Données responsables
+Minimisation
+Transparence Sécurité
+Consentement utilisateur
+Question : le fait de pouvoir mesurer une donnée signifie-t-il qu’il faut la collecter ?
+Question : le fait de pouvoir mesurer une donnée signifie-t-il qu’il faut la collecter ?
+1515Étude de cas : le faux positif
+15
+15
+ÉQUIPES • 10 MINUn bracelet IMU détecte une forte accélération puis une immobilité. L’utilisateur le pose brutalement sur une table : alerte envoyée à la famille.ÉQUIPES • 10 MINUn bracelet IMU détecte une forte accélération puis une immobilité. L’utilisateur le pose brutalement sur une table : alerte envoyée à la famille.Concevoir une alerte de chute qui respecte l’utilisateur
+ÉQUIPES • 10 MIN
+Un bracelet IMU détecte une forte accélération puis une immobilité. L’utilisateur le pose brutalement sur une table : alerte envoyée à la famille.
+ÉQUIPES • 10 MIN
+Un bracelet IMU détecte une forte accélération puis une immobilité. L’utilisateur le pose brutalement sur une table : alerte envoyée à la famille.
+Capteurs / informations additionnelsLogique de décisionInteraction utilisateurCritère d’évaluationGyroscope + capteur de port au poignetCombiner plusieurs conditions Vibration et demande une confirmation Réduire les faux positifs Capteurs / informations additionnelsLogique de décisionInteraction utilisateurCritère d’évaluationGyroscope + capteur de port au poignetCombiner plusieurs conditions Vibration et demande une confirmation Réduire les faux positifs 
+Capteurs / informations additionnels
+Logique de décision
+Interaction utilisateur
+Critère d’évaluation
+Gyroscope + capteur de port au poignet
+Combiner plusieurs conditions
+ Vibration et demande une confirmation 
+Réduire les faux positifs 
+Capteurs / informations additionnels
+Logique de décision
+Interaction utilisateur
+Critère d’évaluation
+Gyroscope + capteur de port au poignet
+Combiner plusieurs conditions
+ Vibration et demande une confirmation 
+Réduire les faux positifs 
+Pistes : gyroscope • détection du port • délai • vibration • annulation • score de confiance.
+1616Atelier projet : Fiche Capteurs s Décision
+16
+16
+ÉQUIPES • 25 MINBesoin cibléUtilisateur • contexte • problèmeGrandeur(s) à observerMouvement • température • pression…ÉQUIPES • 25 MINBesoin cibléUtilisateur • contexte • problèmeGrandeur(s) à observerMouvement • température • pression…TraitementFiltrage • caractéristiques • seuil / IATraitementFiltrage • caractéristiques • seuil / IADécision / serviceAlerte • conseil • suiviDécision / serviceAlerte • conseil • suiviReprenez le wearable présenté dans votre Pitch 1
+ÉQUIPES • 25 MIN
+Besoin ciblé
+Utilisateur • contexte • problème
+Grandeur(s) à observer
+Mouvement • température • pression…
+ÉQUIPES • 25 MIN
+Besoin ciblé
+Utilisateur • contexte • problème
+Grandeur(s) à observer
+Mouvement • température • pression…
+Traitement
+Filtrage • caractéristiques • seuil / IA
+Traitement
+Filtrage • caractéristiques • seuil / IA
+Décision / service
+Alerte • conseil • suivi
+Décision / service
+Alerte • conseil • suivi
+Capteur(s) et placementType • raison • confortCapteur(s) et placementType • raison • confortArchitectureEdge • smartphone • cloudArchitectureEdge • smartphone • cloudDonnée bruteUnité • fréquence • fenêtreDonnée bruteUnité • fréquence • fenêtreRisque s indicateurErreur • autonomie • confidentialité •succèsRisque s indicateurErreur • autonomie • confidentialité •succèsContrainte tirée au sort : 48 h • sans caméra • données non brutes • résistant à la transpiration • coût limité.Contrainte tirée au sort : 48 h • sans caméra • données non brutes • résistant à la transpiration • coût limité.
+Capteur(s) et placement
+Type • raison • confort
+Capteur(s) et placement
+Type • raison • confort
+Architecture
+Edge • smartphone • cloud
+Architecture
+Edge • smartphone • cloud
+Donnée brute
+Unité • fréquence • fenêtre
+Donnée brute
+Unité • fréquence • fenêtre
+Risque s indicateurErreur • autonomie • confidentialité •
+succès
+Risque s indicateurErreur • autonomie • confidentialité •
+succès
+Contrainte tirée au sort : 48 h • sans caméra • données non brutes • résistant à la transpiration • coût limité.
+Contrainte tirée au sort : 48 h • sans caméra • données non brutes • résistant à la transpiration • coût limité.
+1717Micro-pitch technique
+17
+17
+2 minutes par équipe + 1 question technique d’un pair
+RESTITUTION1. Mesure« Nous mesurons … »… afin de répondre à …RESTITUTION1. Mesure« Nous mesurons … »… afin de répondre à …2. Capteur +placement« Nous utilisons … »… placé sur … car …2. Capteur +placement« Nous utilisons … »… placé sur … car …3. Décision« Le système estime /déclenche … »… lorsque …3. Décision« Le système estime /déclenche … »… lorsque …4. Compromis +validation« Nous privilégions … »« Réussi si … »4. Compromis +validation« Nous privilégions … »« Réussi si … »
+RESTITUTION
+1. Mesure
+« Nous mesurons … »
+… afin de répondre à …
+RESTITUTION
+1. Mesure
+« Nous mesurons … »
+… afin de répondre à …
+2. Capteur +
+placement
+« Nous utilisons … »
+… placé sur … car …
+2. Capteur +
+placement
+« Nous utilisons … »
+… placé sur … car …
+3. Décision
+« Le système estime /
+déclenche … »
+… lorsque …
+3. Décision
+« Le système estime /
+déclenche … »
+… lorsque …
+4. Compromis +
+validation
+« Nous privilégions … »
+« Réussi si … »
+4. Compromis +
+validation
+« Nous privilégions … »
+« Réussi si … »
+Question obligatoire entre pairs : « Comment gérez-vous les artefacts, l’autonomie ou la confidentialité ? »Question obligatoire entre pairs : « Comment gérez-vous les artefacts, l’autonomie ou la confidentialité ? »
+Question obligatoire entre pairs : « Comment gérez-vous les artefacts, l’autonomie ou la confidentialité ? »
+Question obligatoire entre pairs : « Comment gérez-vous les artefacts, l’autonomie ou la confidentialité ? »
+1818Feedback entre pairs
+18
+18
+ÉVALUATIONCritèreÉVALUATIONCritère212100Évaluer une architecture, pas seulement une idée
+ÉVALUATIONCritère
+ÉVALUATIONCritère
+2
+1
+2
+1
+0
+0
+Pertinence capteur-besoin
+Incohérente
+Partielle
+Claire et justifiée
+Placement et confort
+Non traité
+Évoqué
+Argumenté
+Chaîne de traitement
+Absente
+Générale
+Logique et réaliste
+Gestion des erreurs
+Absente
+Un risque cité
+Réduction proposée
+Décision et valeur
+Floues
+Plausibles
+Mesurables
+Données et énergie
+Non traitées
+Contrainte citée
+Compromis explicite
+À la fin : chaque groupe écrit une amélioration précise qu’il apportera à sa fiche.
+1G1GQuiz de consolidation
+1G
+1G
+Exit ticket individuel : 5 minutes
+QUIZQUIZ
+QUIZ
+QUIZ
+Quelle différence entre grandeur physique et information utile ?
+1122Pourquoi le placement d’une IMU influence-t-il une détection ?
+1
+1
+2
+2
+33Citez une source d’artefact pour une mesure PPG.
+3
+3
+44Donnez un avantage du traitement local sur le wearable.
+4
+4
+55Quelle décision de conception peut améliorer l’autonomie ?
+5
+5
+Question finale : quel capteur ajouteriez-vous à votre projet, et quelle nouvelle contrainte introduirait-il ?Question finale : quel capteur ajouteriez-vous à votre projet, et quelle nouvelle contrainte introduirait-il ?
+Question finale : quel capteur ajouteriez-vous à votre projet, et quelle nouvelle contrainte introduirait-il ?
+Question finale : quel capteur ajouteriez-vous à votre projet, et quelle nouvelle contrainte introduirait-il ?
+2020Synthèse
+20
+20
+Les idées à retenir
+SYNTHÈSE
+Les capteurs sont les portes d’entrée du monde physique vers le système wearable. Une mesure doit être liée à un besoin, un contexte et une décision explicite.
+Placement, contact, mouvement et environnement influencent fortement les signaux. Une chaîne robuste inclut acquisition, contrôle qualité, traitement et action adaptée. Les compromis précision–autonomie–confort–confidentialité doivent être justifiés.
+Un prototype se valide avec des indicateurs mesurables, y compris ses erreurs possibles.
+Votre fiche devient la section « Capteurs s Données » du dossier de conception.Votre fiche devient la section « Capteurs s Données » du dossier de conception.
+Votre fiche devient la section « Capteurs s Données » du dossier de conception.
+Votre fiche devient la section « Capteurs s Données » du dossier de conception.
+2121Avant la prochaine séance
+21
+21
+Observer un objet réel et préparer le prototypage
+PRÉPARATIONPRÉPARATIONChoisissez un objet connecté auquel vous avez accès : smartwatch, smartphone, écouteurs, bague, bracelet sportif…
+PRÉPARATION
+PRÉPARATION
+Observez3 capteurs probables1 fonctionnalité par capteurObservez3 capteurs probables1 fonctionnalité par capteurAnalysez1 donnée imprécise ou biaisée1 cause possibleAnalysez1 donnée imprécise ou biaisée1 cause possibleProposez1 amélioration1 question techniqueProposez1 amélioration1 question techniqueProchaine séance : passer de la sélection du capteur au prototypage — acquisition, microcontrôleur,communication et premiers essais.Prochaine séance : passer de la sélection du capteur au prototypage — acquisition, microcontrôleur,communication et premiers essais.
+Observez
+3 capteurs probables
+1 fonctionnalité par capteur
+Observez
+3 capteurs probables
+1 fonctionnalité par capteur
+Analysez
+1 donnée imprécise ou biaisée
+1 cause possible
+Analysez
+1 donnée imprécise ou biaisée
+1 cause possible
+Proposez
+1 amélioration
+1 question technique
+Proposez
+1 amélioration
+1 question technique
+Prochaine séance : passer de la sélection du capteur au prototypage — acquisition, microcontrôleur,
+communication et premiers essais.
+Prochaine séance : passer de la sélection du capteur au prototypage — acquisition, microcontrôleur,
+communication et premiers essais.
+Séance en ligne
+
